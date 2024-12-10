@@ -1,3 +1,4 @@
+**Instructions for Penguinassessed Project**
 This project aims to analyse data (culmen width vs culmen length, across 3 species) from the “palmerpenguins” R package (Horst AM,et al, 2020). The repository contains files, for instance:
 - "penguin_analysis.Rmd" contains an R markdown with various statistical analysis techniques analysing these data- a linear regressions, ANCOVA, and Z-test for differences between r coefficients (penguin_analysis.html, is a rendered version of the Rmd file). 
 - "functions", any functions used in this code are saved in seperate R files. 
