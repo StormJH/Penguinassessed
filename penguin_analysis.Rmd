@@ -519,63 +519,8 @@ save_plot_png(Z_test_Hist_plot,
 
 
 ```
-```{r}
+## [QUESTION 3: Open Science]{.underline}
 
+#### a) My GitHub link:
 
-# Fit separate linear models by species, and extract relevant coefficients and p-values
-slope_table <- penguins_clean %>% 
-  group_by(species) %>% 
-  summarise(
-    model = list(lm(culmen_depth_mm ~ culmen_length_mm, data = cur_data())),
-    tidied = list(broom::tidy(model[[1]]))
-  ) %>% 
-  unnest(tidied) %>% 
-  filter(term == "culmen_length_mm") %>% 
-  select(species, estimate, p.value) %>% 
-  rename(slope_coefficient = estimate)
-
-
-
-formatted_p_values <- slope_table %>%
-  mutate(formatted_p = pvalue_format()(p.value)) 
-# Use pvalue_format() to create a new column containing p-values formatted for readability
-
-# Create a scatter plot, overlaying linear regressions for every species
-resultsfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_depth_mm, color = species, shape = species)) +
-  geom_point(alpha = 0.2, position = position_jitter(width = 0.2, height = 0.2)) +  
-  # Increased transparency, and apply jitter to imporve clarity
-  geom_smooth(method = "lm", se = TRUE, aes(fill = species)) +  
-  # Linear regressions with 95% CIs
-  theme_minimal() +
-  labs(
-    title = "Relationship between Culmen Length and Depth for Penguin Species",
-    x = "Culmen Length (mm)",
-    y = "Culmen Depth (mm)"
-  ) +
-  scale_x_continuous(limits = c(30, 60)) +  
-  # Adjust x-axis range to include all data
-  scale_y_continuous(limits = c(13, 22.5)) +  
-  # Adjust y-axis range to include all data
-  scale_color_viridis_d() +  
-  # Apply viridis color palette for species (color-blind friendly)
-  scale_fill_viridis_d() +  
-  # Apply viridis color palette for 95% CI
-  # Add formatted p-values for each slope coefficient
-  annotate("text", x = 45.5, y = 22.5, 
-           label = paste("Adelie: p", formatted_p_values$formatted_p[1]),
-           size = 4, hjust = 0, vjust = 0, fontface = "bold", color = "black") +
-  annotate("text", x = 45.5, y = 22, 
-           label = paste("Chinstrap: p", formatted_p_values$formatted_p[2]),
-           size = 4, hjust = 0, vjust = 0, fontface = "bold", color = "black") +
-  annotate("text", x = 45.5, y = 21.5, 
-           label = paste("Gentoo: p", formatted_p_values$formatted_p[3]),
-           size = 4, hjust = 0, vjust = 0, fontface = "bold", color = "black") +
-  theme(legend.position = "right")  
-#Position legend to the right of figure
-
-# Display results figure
-print(resultsfigure)
-
-```
-```
-
+https://github.com/StormJH/Penguinassessed
