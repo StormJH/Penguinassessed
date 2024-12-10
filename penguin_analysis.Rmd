@@ -470,54 +470,59 @@ print(Z_test_Hist_plot)
 
 
 ```{r, saving figure, warning=FALSE}
+# Create a function for saving figures
 save_plot_png <- function(plot_object, 
-                                  filename, size, res, scaling){
-  agg_png(filename, width   =  size, 
-                    height  =  size, 
-                    units   =  "cm", 
-                    res     =  res, 
-                    scaling =  scaling)
-  print(boxplot)
+                          filename, 
+                          size, 
+                          res, 
+                          scaling) {
+# Create a PNG file with specified parameters
+  agg_png(filename, width = size, 
+                    height = size, 
+                    units = "cm", 
+                    res = res, 
+                    scaling = scaling)
   dev.off()
 }
 
+# Now call the function with the plot objects:
 save_plot_png(explanatoryfigure, 
-                       here("figures", "beak_scatter_report.png"), 
-                       size = 50, res = 500, scaling = 2)
+              here("figures", "beak_scatter_report.png"), 
+              size = 50, res = 500, scaling = 2)
 
 save_plot_png(resultsfigure, 
-                       here("figures", "beak_regressions_report.png"), 
-                       size = 50, res = 500, scaling = 2)
+              here("figures", "beak_regressions_report.png"), 
+              size = 50, res = 500, scaling = 2)
 
 save_plot_png(ANCOVA_qq_plot, 
-                      here("figures", "ANCOVA_qqplot_tests_report.png"), 
-                      size = 50, 
-                      res = 500, 
-                      scaling = 2)
+              here("figures", "ANCOVA_qqplot_tests_report.png"), 
+              size = 50, 
+              res = 500, 
+              scaling = 2)
 
 save_plot_png(ANCOVA_scale_location_plot, 
-                      here("figures", "ANCOVA_scalelocation_tests_report.png"), 
-                      size = 50, 
-                      res = 500, 
-                      scaling = 2)
+              here("figures", "ANCOVA_scalelocation_tests_report.png"), 
+              size = 50, 
+              res = 500, 
+              scaling = 2)
 
 save_plot_png(ANCOVA_hist_plot, 
-                      here("figures", "ANCOVA_histogram_tests_report.png"), 
-                      size = 50, 
-                      res = 500, 
-                      scaling = 2)
+              here("figures", "ANCOVA_histogram_tests_report.png"), 
+              size = 50, 
+              res = 500, 
+              scaling = 2)
 
 save_plot_png(ANCOVA_residuals_vs_fitted_plot, 
-                      here("figures", "ANCOVA_residualsvsfitted_tests_report.png"), 
-                      size = 50, 
-                      res = 500, 
-                      scaling = 2)
+              here("figures", "ANCOVA_residualsvsfitted_tests_report.png"), 
+              size = 50, 
+              res = 500, 
+              scaling = 2)
 
 save_plot_png(Z_test_Hist_plot, 
-                      here("figures", "Z_test_Hist_plot_report.png"), 
-                      size = 50, 
-                      res = 500, 
-                      scaling = 2)
+              here("figures", "Z_test_Hist_plot_report.png"), 
+              size = 50, 
+              res = 500, 
+              scaling = 2)
 
 
 ```
