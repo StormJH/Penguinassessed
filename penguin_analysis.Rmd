@@ -7,9 +7,11 @@ output:
 date: "2024-12-07"
 ---
 
-```{r setup, include=FALSE}
+```{r setup}
 knitr::opts_chunk$set(echo = TRUE)
-
+#Install relevant versions of packages
+renv::restore()
+#Retrieve relevant packages from library
 library(tidyverse)
 library(palmerpenguins)
 library(here)
@@ -33,7 +35,7 @@ library(knitr)
 
 ```{r bad figure, echo=FALSE, warning=FALSE}
 
-#create a csv file containing only raw data
+#Create a csv file containing only raw data
 write_csv(penguins_raw, here("data", "penguins_raw.csv"))
 
 cleaning_penguin_columns <- function(penguins_raw) {
@@ -42,7 +44,8 @@ cleaning_penguin_columns <- function(penguins_raw) {
     remove_empty(c("rows", "cols")) %>%
     select(-starts_with("delta")) %>%
     select(-"comments") %>%
-    drop_na()  # This will remove rows with any missing values
+    drop_na()  
+# This will remove rows with any missing values
 }
 
 # Loading the raw data again
@@ -51,9 +54,7 @@ penguins_raw <- read_csv(here("data", "penguins_raw.csv"), show_col_types = FALS
 # Running the function:
 penguins_clean <- cleaning_penguin_columns(penguins_raw)
 
-# Checking the output
-
-
+#writes cleaned data to a csv file saved in data file
 write_csv(penguins_clean, here("data", "penguins_clean.csv"))
 
 
@@ -130,7 +131,7 @@ penguins_raw <- read_csv(here("data", "penguins_raw.csv"), show_col_types = FALS
 # Running the cleaning function (cleaning.R)
 penguins_clean <- cleaning_penguin_columns(penguins_raw)
 
-#Saving cleaned data as a new csv file
+#Saving cleaned data as a new csv file in data folder
 write_csv(penguins_clean, here("data", "penguins_clean.csv"))
 
 
@@ -138,10 +139,10 @@ write_csv(penguins_clean, here("data", "penguins_clean.csv"))
 ```
 
 ```{r, creating explanatory figure, warning=FALSE}
-#creating a scatter plot
+#Creating a scatter plot
 explanatoryfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_depth_mm, color = species, shape = species)) +  
   geom_point(size = 3, alpha = 0.7) +  
-  # Adjusting size and transparency of points
+# Adjusting size and transparency of points
   theme_minimal() +  
   labs(
     title = "",
@@ -149,11 +150,11 @@ explanatoryfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen
     y = "Culmen Depth (mm)"
   ) +  
   scale_x_continuous(limits = c(30, 60)) +  
-  # Adjusting x-axis range to include all points 
+# Adjusting x-axis range to include all points 
   scale_y_continuous(limits = c(13, 22.5)) +  
-  # Adjust y-axis range to include all points
+# Adjust y-axis range to include all points
   scale_color_viridis_d() +  
-  # Apply viridis color palette for species, colour-blind friendly
+# Apply viridis color palette for species, colour-blind friendly
   scale_shape_manual(values = c(16, 17, 15))  
 # Apply different shapes for 3 species
 
@@ -183,20 +184,20 @@ Ultimately, this  study will establish if culmen length and depth have a signifi
 
 slope_table <- slope_table <- penguins_clean %>% 
   group_by(species) %>% 
-#groups penguins_clean by species column
+# Groups penguins_clean data by species column
   summarise(
     model = list(lm(culmen_depth_mm ~ culmen_length_mm, data = cur_data())),
     tidied = list(broom::tidy(model[[1]]))
   ) %>% 
-#fits a linear model to each species, outputs data as a list in a tidy data frame 
+# Fits a linear model to each species, outputs data as a list in a tidy data frame 
   unnest(tidied) %>% 
-#expands list to contain rows, allowing analysis
+# Expands list to contain rows, allowing analysis
   filter(term == "culmen_length_mm") %>% 
-# select only rows that describe the relationship between culmen length and depth.
+# Select only rows that describe the relationship between culmen length and depth.
   select(species, estimate, p.value) %>% 
- # select the columns containing species, slope coefficients, and p-values.
+# Select the columns containing species, slope coefficients, and p-values.
   rename(slope_coefficient = estimate)
-# rename the estimate column to slope_coefficient to make it more reader-friendly.
+# Rename the estimate column to slope_coefficient to make it more reader-friendly.
   
 
 
@@ -207,7 +208,7 @@ slope_table_formatted <- slope_table %>%
 # Create a scatter plot, overlaying linear regressions for every species
 resultsfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_depth_mm, color = species, shape = species)) +
   geom_point(alpha = 0.2, position = position_jitter(width = 0.2, height = 0.2)) +  
-# Increased transparency, and apply jitter to imporve clarity
+# Increased transparency, and apply jitter to improve clarity
   geom_smooth(method = "lm", se = TRUE, aes(fill = species)) +  
 # Linear regressions with 95% CIs
   theme_minimal() +
@@ -254,7 +255,7 @@ slopetable_renamed<- slope_table_formatted %>%
     "p-value" = p.value,
     "Formatted p-value"= formatted_p)
 
-# Format the table to keep consistent design across all tables.
+# Format the table to keep consistent design across all figures.
 knitr::kable(slopetable_renamed, format = "markdown", digits = 15, caption = "Slope Coeffecients across Species")
 ```
 
@@ -267,7 +268,7 @@ Linear regressions found a statistically significant positive relationship betwe
 # Fit an ANCOVA model
 ancovamodel <- aov(culmen_depth_mm ~ culmen_length_mm + species + culmen_length_mm:species, data = penguins_clean)
 
-# Provide summary of this model
+# Provide a summary of this model
 ancova_summary <- summary(ancovamodel)
 
 # Create a data frame with the relevant results from the summary table
@@ -304,7 +305,8 @@ The ANCOVA, summarised in Figure 4, found a significant difference in the mean c
 
 compare_species_correlations <- function(data, var1, var2, species_col) {
   
-  # Creating a new variable (correlation_results)  that contains a species' Z score, and it's respective SE.
+# Creating a new variable (correlation_results)  that contains a species' Z score, and it's respective SE.
+
   correlation_results <- data %>%
     group_by(!!sym(species_col)) %>%
     summarise(
@@ -314,24 +316,24 @@ compare_species_correlations <- function(data, var1, var2, species_col) {
   # Calculates a correlation coefficient between variable 1 and 2 for each species, calculating sample size for each species
     mutate(
       z = 0.5 * log((1 + correlation) / (1 - correlation)),  
-      # New column, transforming correlation coefficients into a Z score
+  # New column, transforming correlation coefficients into a Z score
       se = 1 / sqrt(n - 3)  
-      # New column containing the standard error for each Z score
+  # New column containing the standard error for each Z score
     )
   
   
   results_comparison <- combn(correlation_results[[species_col]], 2, simplify = FALSE) %>%
-    # Generates a list of all possible pairs of species in correlation_results.
+  # Generates a list of all possible pairs of species in correlation_results.
     lapply(function(pair) {
       species_1 <- correlation_results %>% filter(!!sym(species_col) == pair[1])
       species_2 <- correlation_results %>% filter(!!sym(species_col) == pair[2])
-      # Extract species 1 and 2 from each pair.
+  # Extract species 1 and 2 from each pair.
       z_statistic <- abs(species_1$z - species_2$z) / sqrt(species_1$se^2 + species_2$se^2)
       p_value <- 2 * (1 - pnorm(z_statistic))  
       
 # Calculates z-statistics between species pairs, calculating a two-tailed p-value corresponding with this statistic for every pair.
     
-       data.frame(
+      data.frame(
         species_1 = pair[1],
         species_2 = pair[2],
         correlation_diff = round(abs(species_1$correlation - species_2$correlation),3),
@@ -342,12 +344,11 @@ compare_species_correlations <- function(data, var1, var2, species_col) {
 # Input results into a data frame, naming pair 1 as species 1, pair 2 as species 2, the difference in correlation coefficients as correlation_diff, z-statistic remains the same, along with with p_value. All these values are rounded to 3 decimal places.
      
     bind_rows() %>%
-
-#Combining multiple rows, collecting results from multiple species pairs inputting them into a single table.
+# Combining multiple rows, collecting results from multiple species pairs inputting them into a single table.
     arrange(p_value)  
-
 # Sorts rows of the data, ordering by ascending p-value.
   
+
 # Format the ordered data frame, changing column names to be more reader-friendly.
 
   formatted_results <- results_comparison %>%
