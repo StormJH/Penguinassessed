@@ -8,7 +8,7 @@ date: "2024-12-07"
 ---
 
 ```{r setup}
-knitr::opts_chunk$set(echo = TRUE)
+
 #Install relevant versions of packages
 renv::restore()
 #Retrieve relevant packages from library
@@ -115,7 +115,8 @@ In this study, I aim to establish whether culmen depth and length are phenotypic
 
 ```{r cleaning data, and saving cleaned data}
 #changing column names and removing comments
-write_csv(penguins_raw, here("data", "penguins_raw.csv"))
+
+penguins_raw <- write_csv(penguins_raw, here("data", "penguins_raw.csv"))
 
 cleaning_penguin_columns <- function(penguins_raw){
   penguins_raw %>%
@@ -141,11 +142,11 @@ write_csv(penguins_clean, here("data", "penguins_clean.csv"))
 ```{r, creating explanatory figure, warning=FALSE}
 #Creating a scatter plot
 explanatoryfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_depth_mm, color = species, shape = species)) +  
-  geom_point(size = 3, alpha = 0.7) +  
+  geom_point(size = 3, alpha = 0.75) +  
 # Adjusting size and transparency of points
   theme_minimal() +  
   labs(
-    title = "",
+    title = "Scatter Graph of Culmen Length (mm) versus Culmen Depth (mm)",
     x = "Culmen Length (mm)",  
     y = "Culmen Depth (mm)"
   ) +  
@@ -184,7 +185,7 @@ Ultimately, this  study will establish if culmen length and depth have a signifi
 
 slope_table <- slope_table <- penguins_clean %>% 
   group_by(species) %>% 
-# Groups penguins_clean data by species column
+# Groups penguins_clean data by species
   summarise(
     model = list(lm(culmen_depth_mm ~ culmen_length_mm, data = cur_data())),
     tidied = list(broom::tidy(model[[1]]))
@@ -213,7 +214,7 @@ resultsfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_dep
 # Linear regressions with 95% CIs
   theme_minimal() +
   labs(
-    title = "Relationship between Culmen Length and Depth for Penguin Species",
+    title = "Relationship between Culmen Length and Depth for Penguin Species'",
     x = "Culmen Length (mm)",
     y = "Culmen Depth (mm)"
   ) +
@@ -224,7 +225,7 @@ resultsfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_dep
   scale_color_viridis_d() +  
 # Apply viridis (color-blind friendly) colour palette for species
   scale_fill_viridis_d() +  
-# Apply viridis color palette for 95% CI
+# Apply viridis color palette for 95% CIs
 # Add formatted p-values for each slope coefficient
   annotate("text", x = 45.5, y = 22.5, 
            label = paste("Adelie: p",slope_table_formatted$formatted_p[1]),
@@ -243,7 +244,7 @@ print(resultsfigure)
 
 ```
 
-##### Figure 3a: Correlation between Culmen Length and Depth across 3 Penguin Species. Different colours and shapes represent species, the shaded region around linear regressions represents 95% Confidence Intervals. These intervals indicate the range within which true regressions will fall with 95% certainty. The p-values (top right) indicate wether the slope coefficients are significantly different from 0.
+##### Figure 3a: Correlation between Culmen Length and Depth across 3 Penguin Species. Different colours and shapes represent species, the shaded region around linear regressions represents 95% Confidence Intervals. These intervals indicate the range within which true regressions will fall with 95% certainty. The p-values (top right) indicate wether the slope coefficients are significantly different from 0, at an alpha value of 0.05.
 
 ```{r, making table for slope coeffecients}
 
@@ -271,7 +272,7 @@ ancovamodel <- aov(culmen_depth_mm ~ culmen_length_mm + species + culmen_length_
 # Provide a summary of this model
 ancova_summary <- summary(ancovamodel)
 
-# Create a data frame with the relevant results from the summary table
+# Create a data frame with the relevant results from the summary table, rounded for readability
 ancova_table_df <- data.frame(
   Source = c("Culmen Length (culmen_length_mm)", "Species", "Culmen Length:Species", "Residuals"),
   Df = ancova_summary[[1]]$Df,
@@ -297,7 +298,7 @@ knitr::kable(ancova_table, format = "markdown", digits = 3, caption = "ANCOVA Re
 
 ##### Figure 4: ANCOVA summary table showing the main effects of culmen length and species on culmen depth, along with the interaction effect between the two.
 
-The ANCOVA, summarised in Figure 4, found a significant difference in the mean culmen depth across species (p\<2e-16), additionally culmen length has a significant effect on culmen depth (p\<2e-16). Moreover, we found the interaction effect between culmen length and species identify was statistically insignificant (p=0.62). Therefore, it is unlikely that the relationship between culmen length and depth varies between species.
+The ANCOVA, summarised in Figure 4, found a significant difference in the mean culmen depth across species (p\<2e-16), additionally culmen length has a significant effect on culmen depth (p\<2e-16). Moreover, we found the interaction effect between culmen length and species identity was statistically insignificant (p=0.62). Therefore, it is unlikely that the relationship between culmen length and depth varies between species.
 
 ```{r, making a table comparing significance of differences in correlation coeffecients}
 
@@ -373,23 +374,23 @@ knitr::kable(correlation_differences, format = "markdown", digits = 3, caption =
 
 ##### Figure 5: Table showing the differences in correlation coefficients between pairs of penguin species, along with the corresponding Z-statistics and p-values
 
-However, the strength of these positive correlations did vary significantly across species, as demonstrated in Figure 5. Gentoos and Chinstraps displayed no statistical difference in their correlation coefficients (p=0.909), whereas Adelie penguins had a significantly smaller correlation coefficient than both Gentoos and Chinstraps (p=0.004 and 0.013, respectively). This demonstrates a weaker positive correlation between culmen length and depth in Adelie penguins, in comparison to the stronger correlations displayed in Chinstraps and Gentoos. This is in line with Figure 3a, which displays wider variation of Adelie individuals around their regression line, leading to respectivley wider confidence intervals. Additionally, the lower slope coefficients (0.1767) may further reduce correlation coefficients in Adelie Penguins (Figure 3b).
+However, the strength of these positive correlations did vary significantly across species, as demonstrated in Figure 5. Gentoos and Chinstraps displayed no statistical difference in their correlation coefficients (p=0.909), whereas Adelie penguins had a significantly smaller correlation coefficient than both Gentoos and Chinstraps (p=0.004 and 0.013, respectively). This demonstrates a weaker positive correlation between culmen length and depth in Adelie penguins, in comparison to the stronger correlations displayed in Chinstraps and Gentoos. This is in line with Figure 3a, which displays wider variation of Adelie individuals around their regression line, leading to respectively wider confidence intervals. Additionally, the lower slope coefficients (0.1767) may further reduce correlation coefficients in Adelie Penguins (Figure 3b).
 
 Across all species, culmen depth significantly increases with culmen length. However, the strength of these positive correlations varied across species. Adelie Penguin displayed the lowest covariance in beak morphology, perhaps due to their lower respective slope coefficients, and their wider variation around the regression line.
 
 ### Discussion
 
-The consistent positive correlation across all species, indicates a weak isometric relationship (proportionality) between these traits (Shingleton A, 2010). However, the degree of covariance varies significantly across some species. The significantly higher correlation coefficients in Chinstrap and Gentoo Penguins, suggests higher covariance between culmen length and depth in these two species- compared to Adelie. This perhaps indicates stronger selection pressure in favour for greater phenotypic integration between the traits.
+The consistent positive correlation across all species indicates a weak isometric relationship (proportionality) between these traits (Shingleton A, 2010). However, the degree of covariance varies significantly across some species. The significantly higher correlation coefficients in Chinstrap and Gentoo Penguins suggests higher covariance between culmen length and depth in these two species compared to Adelie. This perhaps indicates stronger selection pressure in favour of greater phenotypic integration between the traits.
 
-Importantly, these comparisons assume species are independent units, however they all vary in their relatedness. Adelie and Gentoos are more closely related to each other, and Chinstraps are more distantly related to both, but all 3 fall within the same genus, *Pygoscelis* (Ksepka, D.T.,et al, 2006). These different evolutionary relationships could undermine the suitability of comparisons. As in the case of estimated covariance, it is the most distantly related species (Chinstraps and Adelies) that display the largest difference in covariance. Therefore, future studies should better control for evolutionary relationships that may confound comparisons of trait covariance.
+Importantly, these comparisons assume that species are independent units. However, these species all vary in their relatedness. Adelie and Gentoos are more closely related to each other, and Chinstraps are more distantly related to both; but all 3 fall within the same genus: *Pygoscelis* (Ksepka, D.T.,et al, 2006). These different evolutionary relationships could undermine the suitability of comparisons. As in the case of estimated covariance, it is the most distantly related species (Chinstraps and Adelies) that display the largest difference in covariance. Therefore, future studies should better control for evolutionary relationships that may confound comparisons of trait covariance.
 
-Significantly higher Pearson's r coefficients, indicate stronger stabilising selection favouring more integrated beak dimensions in the Chinstrap and Gentoo, than that of the Adelie Penguin. However, the validity of these conclusions is limited by the violation of the assumption of normality in the Z-test (Figure 7, supplementary materials), encouraging future analysis to use non-parametric tests, such as bootstrapping. 
+Significantly higher Pearson's r coefficients indicate stronger stabilising selection that favours more integrated beak dimensions in the Chinstrap and Gentoo than that of the Adelie Penguin. However, the validity of these conclusions is limited by the violation of the assumption of normality in the Z-test (Figure 7, supplementary materials); encouraging future analysis to use non-parametric tests (such as bootstrapping). 
 
-Perhaps, stronger morphological integration could be conferred by a shared regulatory unit between the genes conferring culmen length and shape. Stronger co-regulation could be selected for due to enhanced sexual selection on bill shape, selecting for culmen length to be more closely linked to depth, for instance.
+Perhaps stronger morphological integration could be conferred by a shared regulatory unit between the genes determining culmen length and shape. Stronger coregulation could be selected for due to enhanced sexual selection on bill shape, selecting for culmen length to be more closely linked to depth, for instance.
 
 ### Conclusion
 
-Across all three species of penguin, culmen depth was positively correlated with culmen length. However, in line with our hypothesis, the strength of this correlation differed significantly across penguin species. Higher covariance was demonstrated in Gentoo and Chinstrap Penguins, compared to Adelies, possibly a result of stronger stabilising selection on beak shape. These significant differences in beak trait covariance could alter the evolutionary response of Adelies to anthropogenic change, relative to other *Pygoscelis* penguins. However, further study is required to establish mechanistic causes of varying covariance; perhaps identifying coregulatory elements of genes conferring beak shape, which may be present in Chinstraps and Gentoos, but absent (or modified) in Adelies.
+Across all three species of penguin, culmen depth was positively correlated with culmen length. However, in line with our hypothesis, the strength of this correlation differed significantly across penguin species. Higher covariance was demonstrated in Gentoo and Chinstrap Penguins, compared to Adelies; possibly a result of stronger stabilising selection on beak shape. These significant differences in beak trait covariance could alter the evolutionary response of Adelies to anthropogenic change, relative to other *Pygoscelis* penguins. However, further study is required to establish mechanistic causes of differing covariance; perhaps identifying coregulatory elements of genes conferring beak shape which may be present in Chinstraps and Gentoos, but absent (or modified) in Adelies.
 
 ### Bibliography
 
@@ -442,7 +443,7 @@ ANCOVA_scale_location_plot <- ggplot(ANCOVAmodel_data, aes(x = fitted_values, y 
   ggtitle("Scale-Location Plot") + 
   theme_minimal()
 
-# arrange these graphs in a multi panel, gridEXtra required for this
+# arrange these graphs in a multi-panel, gridEXtra required for this
 Assumptionstest<- grid.arrange(ANCOVA_qq_plot, ANCOVA_hist_plot, ANCOVA_residuals_vs_fitted_plot, ANCOVA_scale_location_plot, nrow = 2, ncol = 2)
 
 ```
