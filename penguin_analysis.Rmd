@@ -242,7 +242,7 @@ print(resultsfigure)
 
 ```
 
-##### Figure 3a: Correlation between Culmen Length and Depth across 3 Penguin Species. Different colours and shapes represent species, the shaded region around linear regressions represents 95% Confidence Intervals. These intervals indicate the range within which true regressions will fall with 95% certainty. The p-values indicate wether the slope coefficients are significantly different from 0.
+##### Figure 3a: Correlation between Culmen Length and Depth across 3 Penguin Species. Different colours and shapes represent species, the shaded region around linear regressions represents 95% Confidence Intervals. These intervals indicate the range within which true regressions will fall with 95% certainty. The p-values (top right) indicate wether the slope coefficients are significantly different from 0.
 
 ```{r, making table for slope coeffecients}
 
@@ -300,7 +300,7 @@ The ANCOVA, summarised in Figure 4, found a significant difference in the mean c
 
 ```{r, making a table comparing significance of differences in correlation coeffecients}
 
-# Defining the function to compare correlation coefficients across species, data= data source (penguins_clean), var1= variable 1 (culmen length), var2= variable 2 (culmen depth), and species_col= species column name (species).
+# Defining a function to analyse statistical significance of the difference between correlation coefficients across species, data= data source (penguins_clean), var1= variable 1 (culmen length), var2= variable 2 (culmen depth), and species_col= species column name (species).
 
 compare_species_correlations <- function(data, var1, var2, species_col) {
   
