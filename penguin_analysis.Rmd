@@ -114,7 +114,7 @@ Beak morphology in penguins is closely associated with diet (Gorman KB, et al, 2
 In this study, I aim to establish whether culmen depth and length are phenotypically integrated, and to what degree this integration varies across three Penguin species. To do so, I will calculate whether the covariance of these two traits varies significantly between different species.
 
 ```{r cleaning data, and saving cleaned data}
-#changing column names and removing comments
+# Changing column names and removing comments
 
 penguins_raw <- write_csv(penguins_raw, here("data", "penguins_raw.csv"))
 
@@ -129,7 +129,7 @@ cleaning_penguin_columns <- function(penguins_raw){
 # Loading the raw data
 penguins_raw <- read_csv(here("data", "penguins_raw.csv"), show_col_types = FALSE)
 
-# Running the cleaning function (cleaning.R)
+# Running the cleaning function (cleaning.R, found in functions file)
 penguins_clean <- cleaning_penguin_columns(penguins_raw)
 
 #Saving cleaned data as a new csv file in data folder
@@ -208,7 +208,7 @@ slope_table_formatted <- slope_table %>%
 
 # Create a scatter plot, overlaying linear regressions for every species
 resultsfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_depth_mm, color = species, shape = species)) +
-  geom_point(alpha = 0.2, position = position_jitter(width = 0.2, height = 0.2)) +  
+  geom_point(alpha = 0.4, position = position_jitter(width = 0.1, height = 0.1)) +  
 # Increased transparency, and apply jitter to improve clarity
   geom_smooth(method = "lm", se = TRUE, aes(fill = species)) +  
 # Linear regressions with 95% CIs
@@ -302,7 +302,7 @@ The ANCOVA, summarised in Figure 4, found a significant difference in the mean c
 
 ```{r, making a table comparing significance of differences in correlation coeffecients}
 
-# Defining a function to analyse statistical significance of the difference between correlation coefficients across species, data= data source (penguins_clean), var1= variable 1 (culmen length), var2= variable 2 (culmen depth), and species_col= species column name (species).
+# Defining a function (saved in functions folder, "Z-test_for_correlation_coefficients.R") to analyse statistical significance of the difference between correlation coefficients across species, data= data source (penguins_clean), var1= variable 1 (culmen length), var2= variable 2 (culmen depth), and species_col= species column name (species).
 
 compare_species_correlations <- function(data, var1, var2, species_col) {
   
@@ -423,20 +423,20 @@ ANCOVA_qq_plot <- ggplot(ANCOVAmodel_data, aes(sample = residuals)) +
   ggtitle("Q-Q Plot") + 
   theme_minimal()
 
-# 2) Histogram of residuals, test for normality in residuals.
+# 2) Histogram of residuals, testing for normality in residuals.
 ANCOVA_hist_plot <- ggplot(ANCOVAmodel_data, aes(x = residuals)) + 
   geom_histogram(binwidth = 1, fill = "lightblue", color = "black", alpha = 0.7) + 
   ggtitle("Histogram of Residuals") + 
   theme_minimal()
 
-# 3) Residuals vs Fitted plot, test for linearity and heteroscedasticity.
+# 3) Residuals vs Fitted plot, testing for linearity and heteroscedasticity.
 ANCOVA_residuals_vs_fitted_plot <- ggplot(ANCOVAmodel_data, aes(x = fitted_values, y = residuals)) + 
   geom_point() + 
   geom_smooth(method = "lm", color = "red", se = FALSE) + 
   ggtitle("Residuals vs Fitted") + 
   theme_minimal()
 
-# 4) Scale-Location plot, test of heteroscedasticity in residuals
+# 4) Scale-Location plot, testing for heteroscedasticity in residuals
 ANCOVA_scale_location_plot <- ggplot(ANCOVAmodel_data, aes(x = fitted_values, y = sqrt(abs(residuals)))) + 
   geom_point() + 
   geom_smooth(method = "lm", color = "red", se = FALSE) + 
@@ -531,3 +531,5 @@ save_plot_png(Z_test_Hist_plot,
 #### a) My GitHub link:
 
 https://github.com/StormJH/Penguinassessed
+
+#### a) My GitHub link:
