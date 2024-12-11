@@ -25,6 +25,7 @@ library(grid)
 library(gridExtra)
 library(scales)
 library(knitr)
+renv::snapshot()
 
 ```
 
@@ -182,7 +183,7 @@ Ultimately, this  study will establish if culmen length and depth have a signifi
 
 # Fit separate linear models by species, and extract relevant coefficients and p-values
 
-slope_table <- slope_table <- penguins_clean %>% 
+slope_table <- penguins_clean %>% 
   group_by(species) %>% 
 # Groups penguins_clean data by species
   summarise(
@@ -245,7 +246,7 @@ print(resultsfigure)
 
 ```{r, making table for slope coeffecients}
 
-# Edit the slope_table (produced for explanatory figure) to enhance the readability of it's columns
+# Edit the slope_table (produced for explanatory figure) to enhance the readability of it's column titles 
 slopetable_renamed <- slope_table_formatted %>%
   rename(
     "Species" = species,
@@ -507,4 +508,9 @@ save_plot_png(Z_test_Hist_plot,
 
 https://github.com/StormJH/Penguinassessed
 
-#### a) My Partner's GitHub link:
+#### b) My Partner's GitHub link:
+
+https://github.com/anonymouschimpanzee/PenguinProjectAssignment.git
+
+
+
