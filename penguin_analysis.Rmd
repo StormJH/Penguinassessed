@@ -468,7 +468,7 @@ print(Z_test_Hist_plot)
 
 
 ```{r, saving figures, warning=FALSE}
-# Create a function for saving figures
+# Create a function for saving figures as png files
 save_plot_png <- function(plot_object, 
                           filename, 
                           size, 
