@@ -1,3 +1,6 @@
+
+# This function analyses the statistical significance of the difference between correlation coefficients across species, data= data source (penguins_clean), var1= variable 1 (culmen length), var2= variable 2 (culmen depth), and species_col= species column name (species).
+
 compare_species_correlations <- function(data, var1, var2, species_col) {
   
   # Calculating a species' Fisher's Z score, and it's respective SE.

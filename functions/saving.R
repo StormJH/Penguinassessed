@@ -1,3 +1,6 @@
+
+#This plot saves figures as a PNG.
+
 save_plot_png <- function(plot_object, 
                                   filename, size, res, scaling){
   agg_png(filename, width   =  size, 
