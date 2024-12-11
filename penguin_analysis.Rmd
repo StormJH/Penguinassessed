@@ -320,7 +320,7 @@ compare_species_correlations <- function(data, var1, var2, species_col) {
       p_value <- 2 * (1 - pnorm(z_statistic))  
       
 # Calculates z-statistics between species pairs, calculating a two-tailed p-value corresponding with this statistic for every pair.
-    
+
        data.frame(
         `Species 1` = pair[1],
         `Species 2` = pair[2],
@@ -329,8 +329,9 @@ compare_species_correlations <- function(data, var1, var2, species_col) {
         `p-value` = round(p_value, 3)
       )
     }) %>%
+# Generates a data frame with altered column titles and rounded numbers to 3 decimal places to enhance readability
     bind_rows() 
-  
+# Combines rows for multiple species pairs
   return(results_comparison)
 }
 
