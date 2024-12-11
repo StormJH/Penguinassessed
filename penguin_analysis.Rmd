@@ -199,8 +199,6 @@ slope_table <- slope_table <- penguins_clean %>%
 # Select the columns containing species, slope coefficients, and p-values.
   rename(slope_coefficient = estimate)
 # Rename the estimate column to slope_coefficient to make it more reader-friendly.
-  
-
 
 slope_table_formatted <- slope_table %>%
   mutate(formatted_p = pvalue_format()(p.value)) 
@@ -416,35 +414,35 @@ ANCOVAmodel_data <- data.frame(
   fitted_values = fitted_values
 )
 
-# 1) Q-Q Plot, testing for normality in residuals.
+# Q-Q Plot, testing for normality in residuals.
 ANCOVA_qq_plot <- ggplot(ANCOVAmodel_data, aes(sample = residuals)) + 
   stat_qq() + 
   stat_qq_line() + 
   ggtitle("Q-Q Plot") + 
   theme_minimal()
 
-# 2) Histogram of residuals, testing for normality in residuals.
+# Histogram of residuals, testing for normality in residuals.
 ANCOVA_hist_plot <- ggplot(ANCOVAmodel_data, aes(x = residuals)) + 
   geom_histogram(binwidth = 1, fill = "lightblue", color = "black", alpha = 0.7) + 
   ggtitle("Histogram of Residuals") + 
   theme_minimal()
 
-# 3) Residuals vs Fitted plot, testing for linearity and heteroscedasticity.
+# Residuals vs Fitted plot, testing for linearity and heteroscedasticity.
 ANCOVA_residuals_vs_fitted_plot <- ggplot(ANCOVAmodel_data, aes(x = fitted_values, y = residuals)) + 
   geom_point() + 
   geom_smooth(method = "lm", color = "red", se = FALSE) + 
   ggtitle("Residuals vs Fitted") + 
   theme_minimal()
 
-# 4) Scale-Location plot, testing for heteroscedasticity in residuals
+# Scale-Location plot, testing for heteroscedasticity in residuals
 ANCOVA_scale_location_plot <- ggplot(ANCOVAmodel_data, aes(x = fitted_values, y = sqrt(abs(residuals)))) + 
   geom_point() + 
   geom_smooth(method = "lm", color = "red", se = FALSE) + 
   ggtitle("Scale-Location Plot") + 
   theme_minimal()
 
-# arrange these graphs in a multi-panel, gridEXtra required for this
-Assumptionstest<- grid.arrange(ANCOVA_qq_plot, ANCOVA_hist_plot, ANCOVA_residuals_vs_fitted_plot, ANCOVA_scale_location_plot, nrow = 2, ncol = 2)
+# Arrange these graphs in a multi-panel, gridEXtra required for this
+Assumptionstest <- grid.arrange(ANCOVA_qq_plot, ANCOVA_hist_plot, ANCOVA_residuals_vs_fitted_plot, ANCOVA_scale_location_plot, nrow = 2, ncol = 2)
 
 ```
 
@@ -458,7 +456,7 @@ shapiro_test_Z_Test <- shapiro.test(correlation_differences$`Z-Statistic`)
 print(shapiro_test_Z_Test)
 
 # Plotting the histogram of the Z-statistics, visual test of normality.
-Z_test_Hist_plot<- ggplot(correlation_differences, aes(x = `Z-Statistic` )) +
+Z_test_Hist_plot <- ggplot(correlation_differences, aes(x = `Z-Statistic` )) +
   geom_histogram(color = "black", fill = "lightblue", bins = 10) +
   labs(title = "Histogram of Z-Statistics", x = "Z-Statistic", y = "Frequency") +
   theme_minimal()
