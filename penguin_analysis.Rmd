@@ -247,7 +247,7 @@ print(resultsfigure)
 ```{r, making table for slope coeffecients}
 
 # Edit the slope_table (produced for explanatory figure) to enhance the readability of it's columns
-slopetable_renamed<- slope_table_formatted %>%
+slopetable_renamed <- slope_table_formatted %>%
   rename(
     "Species" = species,
     "Slope Coefficient" = slope_coefficient,
