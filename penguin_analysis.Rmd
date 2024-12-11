@@ -25,7 +25,6 @@ library(grid)
 library(gridExtra)
 library(scales)
 library(knitr)
-renv::snapshot()
 
 ```
 
