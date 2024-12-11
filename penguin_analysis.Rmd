@@ -8,8 +8,8 @@ date: "2024-12-07"
 ---
 
 ```{r setup}
-
-#Install relevant versions of packages
+knitr::opts_chunk$set(echo = TRUE)
+#Install relevant versions of packages from renv.lock file
 renv::restore()
 #Retrieve relevant packages from library
 library(tidyverse)
@@ -179,7 +179,7 @@ Ultimately, this  study will establish if culmen length and depth have a signifi
 
 ### Results
 
-```{r, results figure with p values of slope coefficients, warning=FALSE}
+```{r, results figure with p values for slope coefficients, warning=FALSE}
 
 # Fit separate linear models by species, and extract relevant coefficients and p-values
 
@@ -298,7 +298,7 @@ knitr::kable(ancova_table, format = "markdown", digits = 3, caption = "ANCOVA Re
 
 The ANCOVA, summarised in Figure 4, found a significant difference in the mean culmen depth across species (p\<2e-16), additionally culmen length has a significant effect on culmen depth (p\<2e-16). Moreover, we found the interaction effect between culmen length and species identity was statistically insignificant (p=0.62). Therefore, it is unlikely that the relationship between culmen length and depth varies between species.
 
-```{r, making a table comparing significance of differences in correlation coeffecients}
+```{r, making a table comparing significance of differences between correlation coeffecients}
 
 # Defining a function (saved in functions folder, "Z-test_for_correlation_coefficients.R") to analyse statistical significance of the difference between correlation coefficients across species, data= data source (penguins_clean), var1= variable 1 (culmen length), var2= variable 2 (culmen depth), and species_col= species column name (species).
 
@@ -402,7 +402,7 @@ Ksepka, D.T., Bertelli, S. and Giannini, N.P. (2006), The phylogeny of the livin
 
 ### Supplementary Material
 
-```{r, testing assumptions, warning=FALSE}
+```{r, testing assumptions of ANCOVA, warning=FALSE}
 
 # Source residuals and fitted values.
 residuals <- resid(ancovamodel)
@@ -448,7 +448,7 @@ Assumptionstest <- grid.arrange(ANCOVA_qq_plot, ANCOVA_hist_plot, ANCOVA_residua
 
 ##### Figure 6: Test of the assumptions for linear modelling and ANCOVA
 
-```{r, assumptions of Z-test}
+```{r, testing assumptions of Z-test}
 
 # Checking the normality of the Z-statistics using Shapiro-Wilk test.
 shapiro_test_Z_Test <- shapiro.test(correlation_differences$`Z-Statistic`)
@@ -467,7 +467,7 @@ print(Z_test_Hist_plot)
 ##### Figure 6: Test of the normality asssumption in Z-test
 
 
-```{r, saving figure, warning=FALSE}
+```{r, saving figures, warning=FALSE}
 # Create a function for saving figures
 save_plot_png <- function(plot_object, 
                           filename, 
