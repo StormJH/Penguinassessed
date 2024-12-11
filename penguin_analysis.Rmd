@@ -22,7 +22,6 @@ library(svglite)
 library(viridis)
 library(dplyr)
 library(grid)  
-library(hrbrthemes)
 library(gridExtra)
 library(scales)
 library(knitr)
@@ -79,7 +78,7 @@ ggplot(penguins_clean, aes(x = species)) +
       labels = seq(0, 260, by = 20)  # Display labels for flipper length
     )
   ) +
-  theme_ipsum() +
+  theme_minimal() +
   labs(title = "Penguin Body Mass and Flipper Length by Species") +
   theme(
     axis.title.y.right = element_text(angle = 90, hjust = 0.5),  # Right axis title appearance
@@ -272,25 +271,16 @@ ancova_summary <- summary(ancovamodel)
 
 # Create a data frame with the relevant results from the summary table, rounded for readability
 ancova_table_df <- data.frame(
-  Source = c("Culmen Length (culmen_length_mm)", "Species", "Culmen Length:Species", "Residuals"),
+  `Source of Variation` = c("Culmen Length (culmen_length_mm)", "Species", "Culmen Length:Species", "Residuals"),
   Df = ancova_summary[[1]]$Df,
-  `Sum Sq` = round(ancova_summary[[1]]$`Sum Sq`, 3),
-  `Mean Sq` = round(ancova_summary[[1]]$`Mean Sq`, 3),
-  `F value` = round(ancova_summary[[1]]$`F value`, 3),
-  `Pr(>F)` = format.pval(ancova_summary[[1]]$`Pr(>F)`, digits = 3))
+  `Sum of Squares` = round(ancova_summary[[1]]$`Sum Sq`, 3),
+  `Mean Square` = round(ancova_summary[[1]]$`Mean Sq`, 3),
+  `F-value` = round(ancova_summary[[1]]$`F value`, 3),
+  `p-value` = format.pval(ancova_summary[[1]]$`Pr(>F)`, digits = 3))
 
-# Rename columns of data frame for readability
-ancova_table <- ancova_table_df %>%
-  rename(
-    "Source of Variation" = Source,
-    "Degrees of Freedom" = Df,
-    "Sum of Squares" = Sum.Sq,
-    "Mean Square" = Mean.Sq,
-    "F-Value" = F.value,
-    "P-Value" = Pr..F.)
 
 # Print the table in consistent format
-knitr::kable(ancova_table, format = "markdown", digits = 3, caption = "ANCOVA Results for Culmen Depth by Length and Species")
+knitr::kable(ancova_table_df, format = "markdown", digits = 3, caption = "ANCOVA Results for Culmen Depth by Length and Species")
 
 ```
 
@@ -304,8 +294,7 @@ The ANCOVA, summarised in Figure 4, found a significant difference in the mean c
 
 compare_species_correlations <- function(data, var1, var2, species_col) {
   
-# Creating a new variable (correlation_results)  that contains a species' Z score, and it's respective SE.
-
+  # Creating a new variable (correlation_results)  that contains a species' Z score, and it's respective SE.
   correlation_results <- data %>%
     group_by(!!sym(species_col)) %>%
     summarise(
@@ -315,52 +304,39 @@ compare_species_correlations <- function(data, var1, var2, species_col) {
   # Calculates a correlation coefficient between variable 1 and 2 for each species, calculating sample size for each species
     mutate(
       z = 0.5 * log((1 + correlation) / (1 - correlation)),  
-  # New column, transforming correlation coefficients into a Z score
+      # New column, transforming correlation coefficients into a Z score
       se = 1 / sqrt(n - 3)  
-  # New column containing the standard error for each Z score
+      # New column containing the standard error for each Z score
     )
   
   
   results_comparison <- combn(correlation_results[[species_col]], 2, simplify = FALSE) %>%
-  # Generates a list of all possible pairs of species in correlation_results.
+    # Generates a list of all possible pairs of species in correlation_results.
     lapply(function(pair) {
       species_1 <- correlation_results %>% filter(!!sym(species_col) == pair[1])
       species_2 <- correlation_results %>% filter(!!sym(species_col) == pair[2])
-  # Extract species 1 and 2 from each pair.
+      # Extract species 1 and 2 from each pair.
       z_statistic <- abs(species_1$z - species_2$z) / sqrt(species_1$se^2 + species_2$se^2)
       p_value <- 2 * (1 - pnorm(z_statistic))  
       
 # Calculates z-statistics between species pairs, calculating a two-tailed p-value corresponding with this statistic for every pair.
     
-      data.frame(
-        species_1 = pair[1],
-        species_2 = pair[2],
-        correlation_diff = round(abs(species_1$correlation - species_2$correlation),3),
-        z_statistic = round(z_statistic, 3),
-        p_value = round(p_value, 3))
+       data.frame(
+        `Species 1` = pair[1],
+        `Species 2` = pair[2],
+        `Difference in Correlation Coefficient` = round(abs(species_1$correlation - species_2$correlation), 3),
+        `Z-Statistic` = round(z_statistic, 3),
+        `p-value` = round(p_value, 3)
+      )
     }) %>%
-    
-# Input results into a data frame, naming pair 1 as species 1, pair 2 as species 2, the difference in correlation coefficients as correlation_diff, z-statistic remains the same, along with with p_value. All these values are rounded to 3 decimal places.
-     
-    bind_rows() %>%
-# Combining multiple rows, collecting results from multiple species pairs inputting them into a single table.
-    arrange(p_value)  
-# Sorts rows of the data, ordering by ascending p-value.
+    bind_rows() 
   
-
-# Format the ordered data frame, changing column names to be more reader-friendly.
-
-  formatted_results <- results_comparison %>%
-    rename(
-      "Species 1" = species_1,
-      "Species 2" = species_2,
-      "Difference in Correlation Coefficient" = correlation_diff,
-      "Z-Statistic" = z_statistic,
-      "P-value" = p_value
-    )
-  
-  return(formatted_results)
+  return(results_comparison)
 }
+
+
+
+
 
 # Applying function to the data.
 correlation_differences <- compare_species_correlations(penguins_clean, "culmen_length_mm", "culmen_depth_mm", "species")
