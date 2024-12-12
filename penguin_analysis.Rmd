@@ -59,8 +59,6 @@ write_csv(penguins_clean, here("data", "penguins_clean.csv"))
 
 # Plot with jittered points for body mass and line for flipper length with separate y-axe
 
-# Plot with jittered points for body mass and line for flipper length with separate y-axes
-
 penguins_clean <- penguins_clean %>%
   filter(!is.na(body_mass_g) & !is.na(flipper_length_mm))
 
@@ -113,8 +111,7 @@ Beak morphology in penguins is closely associated with diet (Gorman KB, et al, 2
 In this study, I aim to establish whether culmen depth and length are phenotypically integrated, and to what degree this integration varies across three Penguin species. To do so, I will calculate whether the covariance of these two traits varies significantly between different species.
 
 ```{r cleaning data, and saving cleaned data}
-# Changing column names and removing comments
-
+# Changing column names and removing comments column
 penguins_raw <- write_csv(penguins_raw, here("data", "penguins_raw.csv"))
 
 cleaning_penguin_columns <- function(penguins_raw){
@@ -141,7 +138,7 @@ write_csv(penguins_clean, here("data", "penguins_clean.csv"))
 ```{r, creating explanatory figure, warning=FALSE}
 #Creating a scatter plot
 explanatoryfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_depth_mm, color = species, shape = species)) +  
-  geom_point(size = 3, alpha = 0.75) +  
+  geom_point(alpha = 1, position = position_jitter(width = 0.1, height = 0.1, seed = 160)) +  
 # Adjusting size and transparency of points
   theme_minimal() +  
   labs(
@@ -184,29 +181,29 @@ Ultimately, this  study will establish if culmen length and depth have a signifi
 
 slope_table <- penguins_clean %>% 
   group_by(species) %>% 
-# Groups penguins_clean data by species
-  summarise(
-    model = list(lm(culmen_depth_mm ~ culmen_length_mm, data = cur_data())),
-    tidied = list(broom::tidy(model[[1]]))
+# Groups penguins_clean by species
+  summarise(model = list(lm(culmen_depth_mm ~ culmen_length_mm, data = cur_data())),  
+    # Fits a linear model to each species and stores the summary data as a list
+    slope = list(coef(model[[1]])["culmen_length_mm"]),  
+    # Extracts the slope coefficients for culmen length (the predictor variable) across the 3 species, these are stored as a list
+    p_value = list(summary(model[[1]])$coefficients["culmen_length_mm", 4])  
+    # Extracts the p-values of these slope coefficients, again storing them as a list
   ) %>% 
-# Fits a linear model to each species, outputs data as a list in a tidy data frame 
-  unnest(tidied) %>% 
-# Expands list to contain rows, allowing analysis
-  filter(term == "culmen_length_mm") %>% 
-# Select only rows that describe the relationship between culmen length and depth.
-  select(species, estimate, p.value) %>% 
-# Select the columns containing species, slope coefficients, and p-values.
-  rename(slope_coefficient = estimate)
-# Rename the estimate column to slope_coefficient to make it more reader-friendly.
+  unnest(cols = c(slope, p_value)) %>%  
+  # Expands the individual lists (containing slope coefficients and p values) into rows, each representing a single species.
+  select(species, slope, p_value) %>%  
+  # Selects only species, slope, and p-value columns
+  rename(slope_coefficient = slope)
+  # Renames the slope column to slope_coefficient to make it more reader-friendly.
 
 slope_table_formatted <- slope_table %>%
-  mutate(formatted_p = pvalue_format()(p.value)) 
+  mutate(formatted_p = pvalue_format()(p_value)) 
 # Use pvalue_format() to create a new column containing p-values formatted for readability
 
 # Create a scatter plot, overlaying linear regressions for every species
 resultsfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_depth_mm, color = species, shape = species)) +
-  geom_point(alpha = 0.4, position = position_jitter(width = 0.1, height = 0.1)) +  
-# Increased transparency, and apply jitter to improve clarity
+  geom_point(alpha = 0.4, position = position_jitter(width = 0.1, height = 0.1, seed = 160)) +  
+# Increased transparency, and apply jitter to improve clarity, randomness is made consistent by setting seed for reproducibility
   geom_smooth(method = "lm", se = TRUE, aes(fill = species)) +  
 # Linear regressions with 95% CIs
   theme_minimal() +
@@ -253,7 +250,7 @@ slopetable_renamed <- slope_table_formatted %>%
     "p-value" = p.value,
     "Formatted p-value"= formatted_p)
 
-# Format the table to keep consistent design across all figures.
+# Format the table to enforce consistent design across all figures.
 knitr::kable(slopetable_renamed, format = "markdown", digits = 15, caption = "Slope Coeffecients across Species")
 ```
 
@@ -263,20 +260,20 @@ Linear regressions found a statistically significant positive relationship betwe
 
 ```{r, making ANCOVA summary table}
 
-# Fit an ANCOVA model
+# Fit an ANCOVA model to penguins_clean data
 ancovamodel <- aov(culmen_depth_mm ~ culmen_length_mm + species + culmen_length_mm:species, data = penguins_clean)
 
-# Provide a summary of this model
+#  Summmarise the output of this model
 ancova_summary <- summary(ancovamodel)
 
-# Create a data frame with the relevant results from the summary table, rounded for readability
+# Create a data frame with the relevant results from the summary table (a list) rounded for readability
 ancova_table_df <- data.frame(
   `Source of Variation` = c("Culmen Length (culmen_length_mm)", "Species", "Culmen Length:Species", "Residuals"),
   Df = ancova_summary[[1]]$Df,
   `Sum of Squares` = round(ancova_summary[[1]]$`Sum Sq`, 3),
   `Mean Square` = round(ancova_summary[[1]]$`Mean Sq`, 3),
   `F-value` = round(ancova_summary[[1]]$`F value`, 3),
-  `p-value` = format.pval(ancova_summary[[1]]$`Pr(>F)`, digits = 3))
+  `p-value` = format.pval(ancova_summary[[1]]$`Pr(>F)`,3))
 
 
 # Print the table in consistent format
@@ -295,52 +292,49 @@ The ANCOVA, summarised in Figure 4, found a significant difference in the mean c
 compare_species_correlations <- function(data, var1, var2, species_col) {
   
   # Creating a new variable (correlation_results)  that contains a species' Z score, and it's respective SE.
-  correlation_results <- data %>%
-    group_by(!!sym(species_col)) %>%
+Z_stat_results <- data %>%
+    group_by({{species_col}}) %>%
     summarise(
-      correlation = cor(!!sym(var1), !!sym(var2), use = "complete.obs"),
-      n = n()  
-    ) %>%
-  # Calculates a correlation coefficient between variable 1 and 2 for each species, calculating sample size for each species
+      correlation = cor({{var1}}, {{var2}}, use = "complete.obs"),
+      n = n()) %>%
+      # Calculates a correlation coefficient between variable 1 and 2 for each species, only using complete rows and columns, calculating sample size for each species
     mutate(
       z = 0.5 * log((1 + correlation) / (1 - correlation)),  
       # New column, transforming correlation coefficients into a Z score
       se = 1 / sqrt(n - 3)  
       # New column containing the standard error for each Z score
     )
+
+   species_list <- Z_stat_results %>% pull({{species_col}}) %>% unique()
+   #code identifying all the unique species names in a data frame.
   
-  
-  results_comparison <- combn(correlation_results[[species_col]], 2, simplify = FALSE) %>%
-    # Generates a list of all possible pairs of species in correlation_results.
+  Z_stat_results_comparison <- combn(species_list, 2, simplify = FALSE) %>%
+    # Generates a list of all possible pairs of species from the list, ["Adelie", "Chinstrap"], etc...
     lapply(function(pair) {
-      species_1 <- correlation_results %>% filter(!!sym(species_col) == pair[1])
-      species_2 <- correlation_results %>% filter(!!sym(species_col) == pair[2])
-      # Extract species 1 and 2 from each pair.
+      species_1 <- Z_stat_results %>% filter({{species_col}} == pair[1])
+      species_2 <- Z_stat_results %>% filter({{species_col}} == pair[2])
+    # Extracts species 1 and 2 from each pair ["Adelie"], ["Chinstrap"].
       z_statistic <- abs(species_1$z - species_2$z) / sqrt(species_1$se^2 + species_2$se^2)
       p_value <- 2 * (1 - pnorm(z_statistic))  
       
-# Calculates z-statistics between species pairs, calculating a two-tailed p-value corresponding with this statistic for every pair.
-
-       data.frame(
+# Calculates the difference in z-statistic between every species pairs, calculating a two-tailed p-value corresponding with this difference.
+        
+      data.frame(
         `Species 1` = pair[1],
         `Species 2` = pair[2],
         `Difference in Correlation Coefficient` = round(abs(species_1$correlation - species_2$correlation), 3),
         `Z-Statistic` = round(z_statistic, 3),
-        `p-value` = round(p_value, 3)
-      )
+        `p-value` = round(p_value, 3))
     }) %>%
-# Generates a data frame with altered column titles and rounded numbers to 3 decimal places to enhance readability
+# Generates a data frame with altered column titles and rounded numbers to enhance readability.
     bind_rows() 
-# Combines rows for multiple species pairs
-  return(results_comparison)
+# Combines rows for multiple species pairs.
+  return(Z_stat_results_comparison)
 }
 
 
-
-
-
-# Applying function to the data.
-correlation_differences <- compare_species_correlations(penguins_clean, "culmen_length_mm", "culmen_depth_mm", "species")
+# Applying the Z-test function to penguins_clean data.
+correlation_differences <- compare_species_correlations(penguins_clean, culmen_length_mm, culmen_depth_mm, species)
 
 # Displaying the results in a table of consistent format.
 knitr::kable(correlation_differences, format = "markdown", digits = 3, caption = "Differences in Correlation Coefficients across Species")
@@ -385,40 +379,39 @@ Ksepka, D.T., Bertelli, S. and Giannini, N.P. (2006), The phylogeny of the livin
 residuals <- resid(ancovamodel)
 fitted_values <- fitted(ancovamodel)
 
-# input these statistics into a data frame.
+# Input these statistics into a data frame.
 ANCOVAmodel_data <- data.frame(
   residuals = residuals, 
-  fitted_values = fitted_values
-)
+  fitted_values = fitted_values)
 
-# Q-Q Plot, testing for normality in residuals.
+# Q-Q Plot, testing for normality of residuals.
 ANCOVA_qq_plot <- ggplot(ANCOVAmodel_data, aes(sample = residuals)) + 
   stat_qq() + 
   stat_qq_line() + 
   ggtitle("Q-Q Plot") + 
   theme_minimal()
 
-# Histogram of residuals, testing for normality in residuals.
+# Histogram of residuals, testing for normality of residuals.
 ANCOVA_hist_plot <- ggplot(ANCOVAmodel_data, aes(x = residuals)) + 
-  geom_histogram(binwidth = 1, fill = "lightblue", color = "black", alpha = 0.7) + 
+  geom_histogram(binwidth = 1, fill = "lightblue", color = "black") + 
   ggtitle("Histogram of Residuals") + 
   theme_minimal()
 
-# Residuals vs Fitted plot, testing for linearity and heteroscedasticity.
+# Residuals versus Fitted plot, testing for linearity and heteroscedasticity.
 ANCOVA_residuals_vs_fitted_plot <- ggplot(ANCOVAmodel_data, aes(x = fitted_values, y = residuals)) + 
   geom_point() + 
   geom_smooth(method = "lm", color = "red", se = FALSE) + 
   ggtitle("Residuals vs Fitted") + 
   theme_minimal()
 
-# Scale-Location plot, testing for heteroscedasticity in residuals
+# Scale-Location plot, testing for heteroscedasticity of residuals.
 ANCOVA_scale_location_plot <- ggplot(ANCOVAmodel_data, aes(x = fitted_values, y = sqrt(abs(residuals)))) + 
   geom_point() + 
   geom_smooth(method = "lm", color = "red", se = FALSE) + 
   ggtitle("Scale-Location Plot") + 
   theme_minimal()
 
-# Arrange these graphs in a multi-panel, gridEXtra required for this
+# Arrange these graphs in a multi-panel, gridEXtra package is required for this.
 Assumptionstest <- grid.arrange(ANCOVA_qq_plot, ANCOVA_hist_plot, ANCOVA_residuals_vs_fitted_plot, ANCOVA_scale_location_plot, nrow = 2, ncol = 2)
 
 ```
@@ -426,14 +419,13 @@ Assumptionstest <- grid.arrange(ANCOVA_qq_plot, ANCOVA_hist_plot, ANCOVA_residua
 ##### Figure 6: Test of the assumptions for linear modelling and ANCOVA
 
 ```{r, testing assumptions of Z-test}
-
-# Checking the normality of the Z-statistics using Shapiro-Wilk test.
-shapiro_test_Z_Test <- shapiro.test(correlation_differences$`Z-Statistic`)
+# Checking the normality of Z-statistics using Shapiro-Wilk test.
+shapiro_test_Z_Test <- shapiro.test(correlation_differences$Z.Statistic	)
 
 print(shapiro_test_Z_Test)
 
-# Plotting the histogram of the Z-statistics, visual test of normality.
-Z_test_Hist_plot <- ggplot(correlation_differences, aes(x = `Z-Statistic` )) +
+# Visual test of normality by plotting a histogram of the Z-statistics
+Z_test_Hist_plot <- ggplot(correlation_differences, aes(x = Z.Statistic )) +
   geom_histogram(color = "black", fill = "lightblue", bins = 10) +
   labs(title = "Histogram of Z-Statistics", x = "Z-Statistic", y = "Frequency") +
   theme_minimal()
@@ -441,7 +433,7 @@ Z_test_Hist_plot <- ggplot(correlation_differences, aes(x = `Z-Statistic` )) +
 print(Z_test_Hist_plot)
 ```
 
-##### Figure 6: Test of the normality asssumption in Z-test
+##### Figure 7: Test of the normality asssumption in Z-test
 
 
 ```{r, saving figures, warning=FALSE}
@@ -511,5 +503,26 @@ https://github.com/StormJH/Penguinassessed
 
 https://github.com/anonymouschimpanzee/PenguinProjectAssignment.git
 
+#### c) Reflect on your experience running their code. (300-500 words)
+
+My partners code ran well, with all plots functioning in a reproducible manner. Understanding the intention of the code was effectively achieved using regular annotations, coherently relating the lines of code to their output. In addition to the function of code, annotations also clarified how to interpret outputted tables, this further enhanced the followability of code. 
+
+Moreover, the use of annotations would allow effective identification of potential errors in the code, making it easier to correct potential discrepancies. However, this was irrelevant for my partner’s code, as it was fully operational. 
+The code itself was very succinct, a feature that further enhanced its readability.  This conciseness was achieved by regularly sourcing functions (from the “functions” folder within their repository) into the code. The compartmentalisation of functions isolates the code, limiting the effect of potential errors on output, as well as supporting their quick identification. 
+
+To improve the code further, my partner could have included more information in their README file. Currently, it provides a brief overview of the purpose of the project. Whilst this is excellent, additional help with initial navigation of their repository (by providing a brief breakdown of file contents) could help users more immediately identify the purpose of each file. This may enhance reproducibility- by ensuring potential sources of errors can be more efficiently tracked across files; fully utilising the excellent organisation of their repository.
+
+Additionally, functions within “Assumptions.R” and “Plotting.R” displayed within the “functions” folder would benefit from more consistent annotations, summarising the overall output, and what each line of the function does.  This is a minor improvement, that would allow for more effective linkage between the core code and the functions. Improving this would enable further authors to more easily extract relevant functions to better reproduce appropriate figures.
+Despite these minor additions, I believe the altering of my partners figures would be easily achieved, due to the source code being highly modulated and informatively annotated. These factors support the quick identification of the specific function for each line of code, allowing for appropriate adjustment to enact a desired output. 
+
+#### d) Reflect on your own code based on your experience with your partner's code and their review of yours. (300-500 words)
+
+I was pleased that my code was fully functional across users, additionally that the README file and regular annotations allowed for the easy navigation of my code and it's folders. These features I believe are key for reproducibilioty of code, by clearly relating each line and section to its function. 
+
+My partner suggested using source(here("functions","filename") to make my code more concise, this would allow prevent functions from needing to be referenced in the core code. I agree with this improvement, this would improve the coherency of code, allowing for greater modularity to be achieved, and ensuring that it runs in the most succinct way possible. Additionally, my partner recommended including an additional summary/format section to each function stored within the "functions" folder, suggesting this would allow for the faster identification of the purpose of each function file. The reliability of functions to code, was something I too noted in my improvements, and I agree to make code reproducible it is key that additional files clearly describe their role.  
 
 
+
+-   *What improvements did they suggest, and do you agree?*
+
+-   *What did you learn about writing code for other people?*
