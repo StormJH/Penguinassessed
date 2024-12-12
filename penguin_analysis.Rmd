@@ -7,24 +7,26 @@ output:
 date: "2024-12-07"
 ---
 
-```{r setup, warning=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-#Install relevant versions of packages from renv.lock file
+```{r setup, warning=FALSE, message=FALSE}
+
+#Install relevant versions of packages from renv.lock file:
+
 renv::restore()
-#Retrieve relevant packages from library
+
+#Retrieve relevant packages from library.
 library(tidyverse)
 library(palmerpenguins)
 library(here)
 library(janitor)
-library(ggplot2)
 library(ragg)
-library(svglite)
 library(viridis)
 library(dplyr)
-library(grid)  
 library(gridExtra)
 library(scales)
 library(knitr)
+
+# Sets chunks to automatically display code, as well as output.
+knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
@@ -34,9 +36,12 @@ library(knitr)
 
 ```{r bad figure, echo=FALSE, warning=FALSE}
 
-#Create a csv file containing only raw data
+# Cleaning penguins_raw data and saving the cleaned data as a new csv, penguins_clean:
+
+# Create a csv file containing only raw data.
 write_csv(penguins_raw, here("data", "penguins_raw.csv"))
 
+# Function for changing column names, removing empty columns and rows, removing columns beginning with delta, and removing comments column, removes NA values from data.
 cleaning_penguin_columns <- function(penguins_raw) {
   penguins_raw %>%
     clean_names() %>%
@@ -44,43 +49,57 @@ cleaning_penguin_columns <- function(penguins_raw) {
     select(-starts_with("delta")) %>%
     select(-"comments") %>%
     drop_na()  
-# This will remove rows with any missing values
 }
 
-# Loading the raw data again
+# Loading the raw data.
 penguins_raw <- read_csv(here("data", "penguins_raw.csv"), show_col_types = FALSE)
 
-# Running the function:
+# Running the cleaning function.
 penguins_clean <- cleaning_penguin_columns(penguins_raw)
 
-#writes cleaned data to a csv file saved in data file
+# Write cleaned data to a csv file saved in data file.
 write_csv(penguins_clean, here("data", "penguins_clean.csv"))
 
-
-# Plot with jittered points for body mass and line for flipper length with separate y-axe
-
-penguins_clean <- penguins_clean %>%
-  filter(!is.na(body_mass_g) & !is.na(flipper_length_mm))
+#Dual axis plot with jittered points, inconsistent colour scheme, that is not colour blind friendly:
 
 ggplot(penguins_clean, aes(x = species)) +
   geom_jitter(aes(y = body_mass_g), color = "darkgreen", size = 2, width = 0.8) + 
-  stat_summary(aes(y = flipper_length_mm), fun = mean, geom = "line", linewidth= 1, color = "blue", group = 1) + 
-  stat_summary(aes(y = flipper_length_mm, color = species), fun = mean, geom = "point", size = 3) + 
+  # Applies jitter to the points to augment overlap, apply a uniform colour scheme not in line with legend.
+  # 
+  stat_summary(aes(y = flipper_length_mm), fun = mean, geom = "line", linewidth = 1, color = "blue", group = 1) + 
+  # Generate mean for flipper length for each species, joins them with a blue line.
+  stat_summary(aes(y = flipper_length_mm, color = species), fun = mean, geom = "point", size = 3) +   
+  # Generate points representing mean flipper width for each species, joins them with a blue line.
+  
   scale_y_continuous(
-    name = "Body Mass (g)",  # Primary axis for body mass (grams)
-    limits = c(0, 6200),  # Set the limits for body mass axis
+    name = "Body Mass (g)",  
+    # Primary y axis, body mass.
+    
+    limits = c(0, 6200),  
+    # Set the limits for the primary y axis.
+    
     sec.axis = sec_axis(
-      transform = ~ .,  # Apply transformation to scale flipper length (divide by 20 for example)
-      name = "Flipper Length (mm)",  # Name of the secondary axis
-      breaks = seq(0, 260, by = 20),  # Set breaks for secondary axis for flipper length
-      labels = seq(0, 260, by = 20)  # Display labels for flipper length
+      transform = ~ .,  
+      # Transform the scale of flipper length
+      
+      name = "Flipper Length (mm)",  
+      # Title of the secondary axis.
+      
+      breaks = seq(0, 260, by = 20),  
+      # Set the number of incraments by which the axis increases by.
+      
+      labels = seq(0, 260, by = 20)  
+      # Display labels for flipper length.
     )
   ) +
   theme_minimal() +
   labs(title = "Penguin Body Mass and Flipper Length by Species") +
   theme(
-    axis.title.y.right = element_text(angle = 90, hjust = 0.5),  # Right axis title appearance
-    axis.text.y.right = element_text(hjust = 1)  # Adjust text positioning on the right axis
+    axis.title.y.right = element_text(angle = 90, hjust = 0.5),  
+    # Adjust the title of the right axis.
+    
+    axis.text.y.right = element_text(hjust = 1)  
+    # Adjust the text position on the right axis.
   )
 
 
@@ -88,11 +107,14 @@ ggplot(penguins_clean, aes(x = species)) +
 
 ##### Figure 1: A comparison of Body Mass (g) and Mean Flipper Lengths (mm) across 3 species of penguin
 
+
 #### b) Write about how your design choices mislead the reader about the underlying data (200-300 words).
 
-The figure displays a scatter of body mass of 3 different penguin species (all dark green points), and the differences in mean flipper length across these (3 coloured dots, and ajoining line). The figure has a dual-y axis, the left-most axis represents body mass. Here it is presented on the same scale as flipper length, despite body mass varying over a much greater range. This means that many of the differences in flipper length that vary over a comparatively smaller scale, are overlooked by this graph. This makes it wrongly appear as if mean flipper length does not vary across all three species. Furthermore, the small scale makes it difficult to read the mean flipper lengths from each penguin species.
+Over 70% of scientists reported being unable to reproduce another's results (Baker, M., 2016). A key cause of this, is the inappropriate communication of results through figures, causing incorrect interpretations of true results. Some choices in data presentation can result in less effective communication of results, reducing reproducibility, as demonstrated in Figure 1.
 
-Additionally, the species names on the x axis all overlap, and the key splitting them is in a colour scheme that is not colour-blind friendly. This makes species difficult to differentiate from one another. Moreover, the blue line between them could be confused with the blue coloration of the Gentoo Penguin established in the key.
+The figure has a dual-y axis, the left-most axis represents body mass. Here it is presented on the same scale as flipper length, despite body mass varying over a much greater range. The Office of National statistics (ONS, 2019) identifies this as a key misleading feature of some dual-axis graph. For instance, in Figure 1 the dual-axis makes it wrongly appear as if mean flipper length does not vary across all three species, meaning significant trends could be overlooked. Furthermore, the small scale makes it difficult to read the mean flipper lengths from each penguin species.
+
+A recent study found 48% of cell biology papers contained figures inaccessible to those with deuteranopia (Jambor H., et al, 2021). Therefore, in my misleading figure, the key colour scheme is not colour-blind friendly. This makes it difficult for those with deuteranopia to differentiate species from one another, perhaps causing misinterpretation. Moreover, the blue line joining flipper length means, could be further confused with the blue coloration of the Gentoo Penguin established in the key.
 
 The dark green representing body mass of all three species do not follow the colour scheme in the legend, which is misleading. Furthermore, the high jitter on these scattered points makes its harder, still, to differentiate differences in body mass across species by augmenting overlap. This overall makes it difficult to discern any meaningful information from this graph.
 
@@ -111,21 +133,24 @@ Beak morphology in penguins is closely associated with diet (Gorman KB, et al, 2
 In this study, I aim to establish whether culmen depth and length are phenotypically integrated, and to what degree this integration varies across three Penguin species. To do so, I will calculate whether the covariance of these two traits varies significantly between different species.
 
 ```{r cleaning data, and saving cleaned data}
-# Changing column names and removing comments column
-penguins_raw <- write_csv(penguins_raw, here("data", "penguins_raw.csv"))
 
-cleaning_penguin_columns <- function(penguins_raw){
+# Producing, and using, a function that cleans raw_penguins data and saves it as a separate csv file in the "data" folder: 
+
+# Defining a function to clean data, removes spaces, empty rows and columns, columns with titles beginning with delta or comments, and any NA values.
+cleaning_penguin_columns <- function(penguins_raw) {
   penguins_raw %>%
     clean_names() %>%
-    remove_empty(c("rows", "cols")) %>% 
-    select(-starts_with("delta")) %>%   
-    select(-"comments")                   
+    remove_empty(c("rows", "cols")) %>%
+    select(-starts_with("delta")) %>%
+    select(-"comments") %>%
+    drop_na()  
 }
+
 
 # Loading the raw data
 penguins_raw <- read_csv(here("data", "penguins_raw.csv"), show_col_types = FALSE)
 
-# Running the cleaning function (cleaning.R, found in functions file)
+# Running the cleaning function (cleaning.R, found in "functions" file)
 penguins_clean <- cleaning_penguin_columns(penguins_raw)
 
 #Saving cleaned data as a new csv file in data folder
@@ -136,104 +161,128 @@ write_csv(penguins_clean, here("data", "penguins_clean.csv"))
 ```
 
 ```{r, creating explanatory figure, warning=FALSE}
-#Creating a scatter plot
+
+#Creating a scatter plot for culmen length vs culmen depth:
+
 explanatoryfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_depth_mm, color = species, shape = species)) +  
   geom_point(alpha = 1, position = position_jitter(width = 0.1, height = 0.1, seed = 160)) +  
-# Adjusting size and transparency of points
+# Adjust the size and transparency of points.
+
   theme_minimal() +  
   labs(
     title = "Scatter Graph of Culmen Length (mm) versus Culmen Depth (mm)",
     x = "Culmen Length (mm)",  
-    y = "Culmen Depth (mm)"
-  ) +  
+    y = "Culmen Depth (mm)") +  
+# Add titles to the graph, x and y axis. 
+
   scale_x_continuous(limits = c(30, 60)) +  
 # Adjusting x-axis range to include all points 
+
   scale_y_continuous(limits = c(13, 22.5)) +  
 # Adjust y-axis range to include all points
+
   scale_color_viridis_d() +  
 # Apply viridis color palette for species, colour-blind friendly
+
   scale_shape_manual(values = c(16, 17, 15))  
 # Apply different shapes for 3 species
 
+# Present the output for explanatoryfigure
 print(explanatoryfigure)
 
 ```
 
-##### Figure 2: Scatter Plot of Culmen Length and Culmen Depth across 3 Penguin Species, split by both colour and shape of point; purple circles are Adelie Penguin, green triangles are Chinstrap Penguin, and yellow squares are Gentoo Penguin. .
+##### Figure 2: Scatter Plot of Culmen Length (mm) and Culmen Depth (mm) across 3 Penguin Species, split by both colour and shape of point; purple circles are Adelie Penguin, green triangles are Chinstrap Penguin, and yellow squares are Gentoo Penguin. .
 
 ### Methods
 
 I will use linear regressions to measure **how culmen depth changes with culmen length**, in each of the three species. I will then generate a p value associated with each regression, to confirm the statistical significance of these relationships.
 
-Then, I will use an Analysis of Covariance (ANCOVA) to analyse the significance of the **interaction between culmen length and species identity** in determining variation in culmen width. This will test if species identity affects the relationship between these traits.
+Following this, I will use an Analysis of Covariance (ANCOVA) to analyse the significance of the **interaction between culmen length and species identity** in determining variation in culmen width. This will test if species identity affects the relationship between these traits.
 
 As demonstrated by Figure 6 (supplementary materials) analysis using linear models, as required for both regressions and ANCOVA, is **appropriate** for these data given the displayed normality and homoscedascity of their residuals, and linearity of the relationship between predictor and outcome variables.
 
-Finally, to compare the **differences in the covariance** of these traits across species, I will calculate Pearson's r coefficient for each, transforming this into a Z-score, to generate a p-value- via a Z-test. This value will be used to assess the significance of the differences in the strength of correlations, across the species tested. However, the **suitability of a Z test** is limited by the small sample size and a non-normal distribution of Z-statistics (Figure 7, supplementary materials), which may limit the validity of our conclusions.
+Finally, to compare the **differences in the covariance** of these traits across species, I will calculate Pearson's r coefficient for each (Formula 1, Supplementary Materials), transforming this into a Z-score (Formula 2, Supplementary Materials), to generate a p-value- via a Two-sample Z-test (Formula 3, Supplemenatry Materials). This value will be used to assess the significance of the differences in the strength of correlations, across the species tested. However, the **suitability of a Z test** is limited by the small sample size and a non-normal distribution of Z-statistics (p=0.2497, Figure 7, Supplementary Materials), which may limit the validity of our conclusions.
 
-Ultimately, this  study will establish if culmen length and depth have a significantly different relationship between species, and whether they are significantly more integrated (more strongly correlated) in different species of Penguin.
+Ultimately, this study will establish if culmen length and depth have a significantly different relationship between species, and whether they are significantly more integrated (more strongly correlated) in different species of Penguin.
 
 ### Results
 
-```{r, results figure with p values for slope coefficients, warning=FALSE}
+```{r, extracting p values for slope coefficients from linear regressions fitted to each species, warning=FALSE, message=FALSE}
 
-# Fit separate linear models by species, and extract relevant coefficients and p-values
+# Fit separate linear models by species, and extract relevant coefficients and p-values:
 
-slope_table <- penguins_clean %>% 
+lm_table <- penguins_clean %>% 
   group_by(species) %>% 
-# Groups penguins_clean by species
+    # Groups penguins_clean data by species.
+    
   summarise(model = list(lm(culmen_depth_mm ~ culmen_length_mm, data = cur_data())),  
-    # Fits a linear model to each species and stores the summary data as a list
+    # Fits a linear model to each species, and stores the summary data as a list.
+    
     slope = list(coef(model[[1]])["culmen_length_mm"]),  
-    # Extracts the slope coefficients for culmen length (the predictor variable) across the 3 species, these are stored as a list
+    # Extracts the slope coefficients for culmen length (the predictor variable) across the 3 species, these are also stored as a list.
+    
     p_value = list(summary(model[[1]])$coefficients["culmen_length_mm", 4])  
-    # Extracts the p-values of these slope coefficients, again storing them as a list
+    # Extracts the p-values of these slope coefficients, again storing them as a list.
+    
   ) %>% 
   unnest(cols = c(slope, p_value)) %>%  
   # Expands the individual lists (containing slope coefficients and p values) into rows, each representing a single species.
+  
   select(species, slope, p_value) %>%  
-  # Selects only species, slope, and p-value columns
+  # Selects only species, slope, and p-value columns.
+  
   rename(slope_coefficient = slope)
   # Renames the slope column to slope_coefficient to make it more reader-friendly.
 
-slope_table_formatted <- slope_table %>%
+lm_table_formatted <- lm_table %>%
   mutate(formatted_p = pvalue_format()(p_value)) 
-# Use pvalue_format() to create a new column containing p-values formatted for readability
+# Use pvalue_format() to create a new column containing p-values formatted for readability.
+```
 
-# Create a scatter plot, overlaying linear regressions for every species
+```{r, producing a scatter plot overlaying linear regressions for each species}
+
+# Producing a scatter plat overlaying linear regressions for each species:
+
 resultsfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_depth_mm, color = species, shape = species)) +
   geom_point(alpha = 0.4, position = position_jitter(width = 0.1, height = 0.1, seed = 160)) +  
-# Increased transparency, and apply jitter to improve clarity, randomness is made consistent by setting seed for reproducibility
+# Increased transparency, and apply jitter to improve clarity, randomness is made consistent by setting seed for reproducibility.
+
   geom_smooth(method = "lm", se = TRUE, aes(fill = species)) +  
-# Linear regressions with 95% CIs
+# Apply a linear regressions with 95% CIs for each species.
+
   theme_minimal() +
   labs(
     title = "Relationship between Culmen Length and Depth for Penguin Species'",
     x = "Culmen Length (mm)",
-    y = "Culmen Depth (mm)"
-  ) +
+    y = "Culmen Depth (mm)") +
   scale_x_continuous(limits = c(30, 60)) +  
-# Adjust x-axis range to include all data
+# Adjust x-axis range to include all data.
+
   scale_y_continuous(limits = c(13, 22.5)) +  
-# Adjust y-axis range to include all data
+# Adjust y-axis range to include all data.
+
   scale_color_viridis_d() +  
-# Apply viridis (color-blind friendly) colour palette for species
+# Apply viridis (color-blind friendly) colour palette for species.
+
   scale_fill_viridis_d() +  
-# Apply viridis color palette for 95% CIs
-# Add formatted p-values for each slope coefficient
+# Apply viridis color palette for 95% confidence intervals.
+
   annotate("text", x = 45.5, y = 22.5, 
-           label = paste("Adelie: p",slope_table_formatted$formatted_p[1]),
+           label = paste("Adelie: p",lm_table_formatted$formatted_p[1]),
            size = 4, hjust = 0, vjust = 0, fontface = "bold", color = "black") +
   annotate("text", x = 45.5, y = 22, 
-           label = paste("Chinstrap: p", slope_table_formatted$formatted_p[2]),
+           label = paste("Chinstrap: p", lm_table_formatted$formatted_p[2]),
            size = 4, hjust = 0, vjust = 0, fontface = "bold", color = "black") +
   annotate("text", x = 45.5, y = 21.5, 
-           label = paste("Gentoo: p", slope_table_formatted$formatted_p[3]),
+           label = paste("Gentoo: p", lm_table_formatted$formatted_p[3]),
            size = 4, hjust = 0, vjust = 0, fontface = "bold", color = "black") +
-  theme(legend.position = "right")  
-#Position legend to the right of figure
+# Add formatted p-values for each slope coefficient.
 
-# Display results figure
+  theme(legend.position = "right")  
+# Position legend to the right of figure.
+
+# Display results figure.
 print(resultsfigure)
 
 ```
@@ -242,16 +291,18 @@ print(resultsfigure)
 
 ```{r, making table for slope coeffecients}
 
-# Edit the slope_table (produced for explanatory figure) to enhance the readability of it's column titles 
-slopetable_renamed <- slope_table_formatted %>%
+# Making a table for coefficients and their respective p-values:
+
+# Rename the linear model sumamary table (produced for explanatory figure) to enhance the readability of it's column titles.
+lm_table_renamed <- lm_table_formatted %>%
   rename(
     "Species" = species,
     "Slope Coefficient" = slope_coefficient,
-    "p-value" = p.value,
+    "p-value" = p_value,
     "Formatted p-value"= formatted_p)
 
 # Format the table to enforce consistent design across all figures.
-knitr::kable(slopetable_renamed, format = "markdown", digits = 15, caption = "Slope Coeffecients across Species")
+knitr::kable(lm_table_renamed, format = "markdown", digits = 15, caption = "Slope Coeffecients across Species")
 ```
 
 ##### Figure 3b: Table presenting the slope coefficients and their associated p-values for each species.
@@ -260,13 +311,15 @@ Linear regressions found a statistically significant positive relationship betwe
 
 ```{r, making ANCOVA summary table}
 
-# Fit an ANCOVA model to penguins_clean data
+# Fitting and printing the results of an ANCOVA:
+
+# Fit an ANCOVA model to penguins_clean data.
 ancovamodel <- aov(culmen_depth_mm ~ culmen_length_mm + species + culmen_length_mm:species, data = penguins_clean)
 
-#  Summmarise the output of this model
+#  Summmarises the output of this model in a summary table.
 ancova_summary <- summary(ancovamodel)
 
-# Create a data frame with the relevant results from the summary table (a list) rounded for readability
+# Create a data frame with the relevant results from the summary table (a list) rounded for readability.
 ancova_table_df <- data.frame(
   `Source of Variation` = c("Culmen Length (culmen_length_mm)", "Species", "Culmen Length:Species", "Residuals"),
   Df = ancova_summary[[1]]$Df,
@@ -276,7 +329,7 @@ ancova_table_df <- data.frame(
   `p-value` = format.pval(ancova_summary[[1]]$`Pr(>F)`,3))
 
 
-# Print the table in consistent format
+# Print the table in consistent format.
 knitr::kable(ancova_table_df, format = "markdown", digits = 3, caption = "ANCOVA Results for Culmen Depth by Length and Species")
 
 ```
@@ -287,57 +340,63 @@ The ANCOVA, summarised in Figure 4, found a significant difference in the mean c
 
 ```{r, making a table comparing significance of differences between correlation coeffecients}
 
-# Defining a function (saved in functions folder, "Z-test_for_correlation_coefficients.R") to analyse statistical significance of the difference between correlation coefficients across species, data= data source (penguins_clean), var1= variable 1 (culmen length), var2= variable 2 (culmen depth), and species_col= species column name (species).
+# Defining a function (saved in "functions" folder, "Z-test_for_correlation_coefficients.R") to analyse statistical significance of the difference between correlation coefficients across species, data= data source (penguins_clean), var1= variable 1 (culmen length), var2= variable 2 (culmen depth), and species= species column (species):
 
-compare_species_correlations <- function(data, var1, var2, species_col) {
+compare_species_correlations <- function(data, var1, var2, species) {
   
-  # Creating a new variable (correlation_results)  that contains a species' Z score, and it's respective SE.
+# Creating a new vector (Z_stat_results)  that contains a species' Z score, and it's respective SE:
+
 Z_stat_results <- data %>%
-    group_by({{species_col}}) %>%
-    summarise(
-      correlation = cor({{var1}}, {{var2}}, use = "complete.obs"),
+    group_by({{species}}) %>%
+    summarise(correlation = cor({{var1}}, {{var2}}, use = "complete.obs"),
       n = n()) %>%
-      # Calculates a correlation coefficient between variable 1 and 2 for each species, only using complete rows and columns, calculating sample size for each species
+      # Calculates a correlation coefficient between variable 1 and 2 for each species, only using complete rows and columns, calculating sample size for each species.
+  
     mutate(
       z = 0.5 * log((1 + correlation) / (1 - correlation)),  
-      # New column, transforming correlation coefficients into a Z score
+      # Creates a new column, transforming correlation coefficients into a Z-score.
+  
       se = 1 / sqrt(n - 3)  
-      # New column containing the standard error for each Z score
+      # Creates a new column containing the standard error for each Z score.
     )
 
-   species_list <- Z_stat_results %>% pull({{species_col}}) %>% unique()
-   #code identifying all the unique species names in a data frame.
+   species_list <- Z_stat_results %>% pull({{species}}) %>% unique()
+   # Identifies all the unique species names in a data frame, and stores them in the species_list vector ("Adelie", "Chinstrap", "Gentoo").
   
   Z_stat_results_comparison <- combn(species_list, 2, simplify = FALSE) %>%
-    # Generates a list of all possible pairs of species from the list, ["Adelie", "Chinstrap"], etc...
+    # Generates a list of all possible pairs of species from the species_list vector, ["Adelie", "Chinstrap"], etc...
+
     lapply(function(pair) {
-      species_1 <- Z_stat_results %>% filter({{species_col}} == pair[1])
-      species_2 <- Z_stat_results %>% filter({{species_col}} == pair[2])
-    # Extracts species 1 and 2 from each pair ["Adelie"], ["Chinstrap"].
-      z_statistic <- abs(species_1$z - species_2$z) / sqrt(species_1$se^2 + species_2$se^2)
-      p_value <- 2 * (1 - pnorm(z_statistic))  
-      
-# Calculates the difference in z-statistic between every species pairs, calculating a two-tailed p-value corresponding with this difference.
-        
-      data.frame(
+      species_1 <- Z_stat_results %>% filter({{species}} == pair[1])
+      species_2 <- Z_stat_results %>% filter({{species}} == pair[2])
+    # Extracts species 1 and 2 from each pair (e.g, pair[1]=["Adelie"] pair[2]=["Chinstrap"]) assigning them to separate vectors (species_1 and species_2).
+
+      z_stat <- abs(species_1$z - species_2$z) / sqrt(species_1$se^2 + species_2$se^2)
+      p_value <- 2 * (1 - pnorm(z_stat))  
+    # Calculates the absolute difference in z-statistic within every species pair, calculating a two-tailed p-value corresponding with this difference.
+
+       data.frame(
         `Species 1` = pair[1],
         `Species 2` = pair[2],
         `Difference in Correlation Coefficient` = round(abs(species_1$correlation - species_2$correlation), 3),
-        `Z-Statistic` = round(z_statistic, 3),
+        `Z-Statistic` = round(z_stat, 3),
         `p-value` = round(p_value, 3))
+    # Generates a data frame for the outputted data, altered column titles and rounded numbers to enhance readability.
+
     }) %>%
-# Generates a data frame with altered column titles and rounded numbers to enhance readability.
     bind_rows() 
-# Combines rows for multiple species pairs.
+# Combines rows relating to different species pairs into a single data frame, containing all species pairs.
+
   return(Z_stat_results_comparison)
+# Send result of the function to the user, enabling its use outside of the function.
 }
 
 
 # Applying the Z-test function to penguins_clean data.
-correlation_differences <- compare_species_correlations(penguins_clean, culmen_length_mm, culmen_depth_mm, species)
+penguin_correlation_differences <- compare_species_correlations(penguins_clean, culmen_length_mm, culmen_depth_mm, species)
 
 # Displaying the results in a table of consistent format.
-knitr::kable(correlation_differences, format = "markdown", digits = 3, caption = "Differences in Correlation Coefficients across Species")
+knitr::kable(penguin_correlation_differences, format = "markdown", digits = 3, caption = "Differences in Correlation Coefficients across Species")
 
 ```
 
@@ -353,7 +412,7 @@ The consistent positive correlation across all species indicates a weak isometri
 
 Importantly, these comparisons assume that species are independent units. However, these species all vary in their relatedness. Adelie and Gentoos are more closely related to each other, and Chinstraps are more distantly related to both; but all 3 fall within the same genus: *Pygoscelis* (Ksepka, D.T.,et al, 2006). These different evolutionary relationships could undermine the suitability of comparisons. As in the case of estimated covariance, it is the most distantly related species (Chinstraps and Adelies) that display the largest difference in covariance. Therefore, future studies should better control for evolutionary relationships that may confound comparisons of trait covariance.
 
-Significantly higher Pearson's r coefficients indicate stronger stabilising selection that favours more integrated beak dimensions in the Chinstrap and Gentoo than that of the Adelie Penguin. However, the validity of these conclusions is limited by the violation of the assumption of normality in the Z-test (Figure 7, supplementary materials); encouraging future analysis to use non-parametric tests (such as bootstrapping). 
+Significantly higher Pearson's r coefficients indicate stronger stabilising selection that favours more integrated beak dimensions in the Chinstrap and Gentoo than that of the Adelie Penguin. However, the validity of these conclusions is limited by the violation of the assumption of normality in the Z-test (Figure 7, supplementary materials); encouraging future analysis to use non-parametric tests (such as bootstrapping).
 
 Perhaps stronger morphological integration could be conferred by a shared regulatory unit between the genes determining culmen length and shape. Stronger coregulation could be selected for due to enhanced sexual selection on bill shape, selecting for culmen length to be more closely linked to depth, for instance.
 
@@ -363,19 +422,27 @@ Across all three species of penguin, culmen depth was positively correlated with
 
 ### Bibliography
 
-Horst AM, Hill AP, Gorman KB (2020). *palmerpenguins: Palmer Archipelago (Antarctica) penguin data*. [doi:10.5281/zenodo.3960218](https://doi.org/10.5281/zenodo.3960218), R package version 0.1.0, <https://allisonhorst.github.io/palmerpenguins/>.
+Baker, M. (2016). 1,500 scientists lift the lid on reproducibility. Nature, 533(7604), 452–454. https://doi.org/10.1038/533452a
 
-Gorman KB, Williams TD, Fraser WR. Ecological sexual dimorphism and environmental variability within a community of antarctic penguins (Genus Pygoscelis). PLoS One. 2014 Mar 5;9(3):e90081. doi: 10.1371/journal.pone.0090081. PMID: 24599330; PMCID: PMC3943793.
+Jambor, H., Antonietti, A., Alicea, B., Audisio, T. L., Auer, S., Bhardwaj, V., et al. (2021). Creating clear and informative image-based figures for scientific publications. PLoS Biology, 19(3), e3001161. https://doi.org/10.1371/journal.pbio.3001161
 
-Shingleton AW (Department of Zoology, Michigan State University) © 2010 Nature Education Citation: Shingleton, A. (2010) Allometry: The Study of Biological Scaling. Nature Education Knowledge 3(10):2
+Office for National Statistics. (2019, July 3). Dueling with axis: The problems with dual axis charts. ONS Digital Blog. https://digitalblog.ons.gov.uk/2019/07/03/dueling-with-axis-the-problems-with-dual-axis-charts/
 
-Ksepka, D.T., Bertelli, S. and Giannini, N.P. (2006), The phylogeny of the living and fossil Sphenisciformes (penguins). Cladistics, 22: 412-441. https://doi.org/10.1111/j.1096-0031.2006.00116.x
+Horst, A. M., Hill, A. P., & Gorman, K. B. (2020). palmerpenguins: Palmer Archipelago (Antarctica) penguin data (R package version 0.1.0). Zenodo. https://doi.org/10.5281/zenodo.3960218
+
+Gorman, K. B., Williams, T. D., & Fraser, W. R. (2014). Ecological sexual dimorphism and environmental variability within a community of Antarctic penguins (Genus Pygoscelis). PLoS ONE, 9(3), e90081. https://doi.org/10.1371/journal.pone.0090081
+
+Shingleton, A. W. (2010). Allometry: The study of biological scaling. Nature Education Knowledge, 3(10), 2.
+
+Ksepka, D. T., Bertelli, S., & Giannini, N. P. (2006). The phylogeny of the living and fossil Sphenisciformes (penguins). Cladistics, 22(5), 412–441. https://doi.org/10.1111/j.1096-0031.2006.00116.x
 
 ### Supplementary Material
 
-```{r, testing assumptions of ANCOVA, warning=FALSE}
+```{r, testing assumptions of ANCOVA, warning=FALSE, message=FALSE}
 
-# Source residuals and fitted values.
+# Testing assumptions of ANCOVA (linear models):
+
+# Extracting residuals (deviations from predicted values) and fitted values (predicted values) from the ancovamodel.
 residuals <- resid(ancovamodel)
 fitted_values <- fitted(ancovamodel)
 
@@ -418,14 +485,44 @@ Assumptionstest <- grid.arrange(ANCOVA_qq_plot, ANCOVA_hist_plot, ANCOVA_residua
 
 ##### Figure 6: Test of the assumptions for linear modelling and ANCOVA
 
+
+
+
+
+#### Formula 1, Pearson's r coefficient:
+
+\[
+r = \frac{n \sum{x_i y_i} - \sum{x_i} \sum{y_i}}{\sqrt{\left(n \sum{x_i^2} - (\sum{x_i})^2\right) \left(n \sum{y_i^2} - (\sum{y_i})^2\right)}}
+\]
+
+#### Formula 2, r-to-Z transformation:
+
+\[
+z = \frac{1}{2} \ln\left(\frac{1 + r}{1 - r}\right)
+\]
+
+#### Formula 3, Z-test, and calculation of p-value :
+
+\[
+z_{\text{stat}} = \frac{|z_1 - z_2|}{\sqrt{SE_1^2 + SE_2^2}}
+\]
+
+\[
+p = 2 \times \left(1 - \Phi\left(|z_{\text{stat}}|\right)\right)
+\]
+
+
+
+
+
 ```{r, testing assumptions of Z-test}
-# Checking the normality of Z-statistics using Shapiro-Wilk test.
-shapiro_test_Z_Test <- shapiro.test(correlation_differences$Z.Statistic	)
+# Checking the normality of Z-statistics, using Shapiro-Wilk test.
+shapiro_test_Z_Test <- shapiro.test(penguin_correlation_differences$Z.Statistic	)
 
 print(shapiro_test_Z_Test)
-
-# Visual test of normality by plotting a histogram of the Z-statistics
-Z_test_Hist_plot <- ggplot(correlation_differences, aes(x = Z.Statistic )) +
+             
+# Visual test of normality by plotting a histogram of the Z-statistics.
+Z_test_Hist_plot <- ggplot(penguin_correlation_differences, aes(x = Z.Statistic )) +
   geom_histogram(color = "black", fill = "lightblue", bins = 10) +
   labs(title = "Histogram of Z-Statistics", x = "Z-Statistic", y = "Frequency") +
   theme_minimal()
@@ -436,23 +533,30 @@ print(Z_test_Hist_plot)
 ##### Figure 7: Test of the normality asssumption in Z-test
 
 
-```{r, saving figures, warning=FALSE}
-# Create a function for saving figures as png files
+
+
+```{r, saving figures, warning=FALSE, message=FALSE}
+
+# Create a function for saving figures as png files.
+
 save_plot_png <- function(plot_object, 
                           filename, 
                           size, 
                           res, 
                           scaling) {
-# Create a png file with specified parameters
+# Create a png file with specified parameters.
+
   agg_png(filename, width = size, 
                     height = size, 
                     units = "cm", 
                     res = res, 
                     scaling = scaling)
+  print(plot_object)
   dev.off()
 }
 
-# Calling the function on selected figures:
+# Utilising the function for selected figures (plots):
+
 save_plot_png(explanatoryfigure, 
               here("figures", "Figure2_beak_scatter_report.png"), 
               size = 50, res = 500, scaling = 2)
@@ -461,7 +565,7 @@ save_plot_png(resultsfigure,
               here("figures", "Figure3a_beak_regressions_report.png"), 
               size = 50, res = 500, scaling = 2)
 
-save_plot_png(ANCOVA_qq_plot, 
+save_plot_png(ANCOVA_qq_plot,
               here("figures", "Figure6_ANCOVA_qqplot_tests_report.png"), 
               size = 50, 
               res = 500, 
@@ -492,37 +596,35 @@ save_plot_png(Z_test_Hist_plot,
               scaling = 2)
 
 
+
 ```
+
 ## [QUESTION 3: Open Science]{.underline}
 
 #### a) My GitHub link:
 
-https://github.com/StormJH/Penguinassessed
+<https://github.com/StormJH/Penguinassessed>
 
 #### b) My Partner's GitHub link:
 
-https://github.com/anonymouschimpanzee/PenguinProjectAssignment.git
+<https://github.com/anonymouschimpanzee/PenguinProjectAssignment.git>
 
 #### c) Reflect on your experience running their code. (300-500 words)
 
-My partners code ran well, with all plots functioning in a reproducible manner. Understanding the intention of the code was effectively achieved using regular annotations, coherently relating the lines of code to their output. In addition to the function of code, annotations also clarified how to interpret outputted tables, this further enhanced the followability of code. 
+My partners code ran well, with all plots functioning in a reproducible manner. Understanding the intention of the code was effectively achieved using regular annotations, coherently relating the lines of code to their output. In addition to the function of code, annotations also clarified how to interpret outputted tables, this further enhanced the followability of code.
 
-Moreover, the use of annotations would allow effective identification of potential errors in the code, making it easier to correct potential discrepancies. However, this was irrelevant for my partner’s code, as it was fully operational. 
-The code itself was very succinct, a feature that further enhanced its readability.  This conciseness was achieved by regularly sourcing functions (from the “functions” folder within their repository) into the code. The compartmentalisation of functions isolates the code, limiting the effect of potential errors on output, as well as supporting their quick identification. 
+Moreover, the use of annotations would allow effective identification of potential errors in the code, making it easier to correct potential discrepancies. However, this was irrelevant for my partner’s code, as it was fully operational. The code itself was very succinct, a feature that further enhanced its readability. This conciseness was achieved by regularly sourcing functions (from the “functions” folder within their repository) into the code. The compartmentalisation of functions isolates the code, limiting the effect of potential errors on output, as well as supporting their quick identification.
 
 To improve the code further, my partner could have included more information in their README file. Currently, it provides a brief overview of the purpose of the project. Whilst this is excellent, additional help with initial navigation of their repository (by providing a brief breakdown of file contents) could help users more immediately identify the purpose of each file. This may enhance reproducibility- by ensuring potential sources of errors can be more efficiently tracked across files; fully utilising the excellent organisation of their repository.
 
-Additionally, functions within “Assumptions.R” and “Plotting.R” displayed within the “functions” folder would benefit from more consistent annotations, summarising the overall output, and what each line of the function does.  This is a minor improvement, that would allow for more effective linkage between the core code and the functions. Improving this would enable further authors to more easily extract relevant functions to better reproduce appropriate figures.
-Despite these minor additions, I believe the altering of my partners figures would be easily achieved, due to the source code being highly modulated and informatively annotated. These factors support the quick identification of the specific function for each line of code, allowing for appropriate adjustment to enact a desired output. 
+Additionally, functions within “Assumptions.R” and “Plotting.R” displayed within the “functions” folder would benefit from more consistent annotations, summarising the overall output, and what each line of the function does. This is a minor improvement, that would allow for more effective linkage between the core code and the functions. Improving this would enable further authors to more easily extract relevant functions to better reproduce appropriate figures. Despite these minor additions, I believe the altering of my partners figures would be easily achieved, due to the source code being highly modulated and informatively annotated. These factors support the quick identification of the specific function for each line of code, allowing for appropriate adjustment to enact a desired output.
 
 #### d) Reflect on your own code based on your experience with your partner's code and their review of yours. (300-500 words)
 
-I was pleased that my code was fully functional across users, additionally that the README file and regular annotations allowed for the easy navigation of my code and it's folders. These features I believe are key for reproducibilioty of code, by clearly relating each line and section to its function. 
+I was pleased that my code was fully functional across users. Additionally, that the README file and regular annotations allowed for the easy navigation of my code, and its constituent folders. These features- I believe- are key for reproducibility of code, by clearly relating each line and section to its function.
 
-My partner suggested using source(here("functions","filename") to make my code more concise, this would allow prevent functions from needing to be referenced in the core code. I agree with this improvement, this would improve the coherency of code, allowing for greater modularity to be achieved, and ensuring that it runs in the most succinct way possible. Additionally, my partner recommended including an additional summary/format section to each function stored within the "functions" folder, suggesting this would allow for the faster identification of the purpose of each function file. The reliability of functions to code, was something I too noted in my improvements, and I agree to make code reproducible it is key that additional files clearly describe their role.  
+My partner suggested using source(here("functions","filename") to make my code more concise. This would be a minor addditon to my use of predefined functions (all of which are already saved in my "functions folder") reducing the need to define functions within the core script. Therefore, I agree with this improvement; sourcing functions would improve the coherency of my code, whilst allowing for greater modularity to be achieved. This modularity would further limits the likelihood and impacts of accidental alterations to code, further lessening the effect of errors.
 
+Additionally, my partner recommended including an additional summary/format section to each function file stored within the "functions" folder, suggesting this would allow for the faster identification of the purpose of each function file. The relatability of functions to the core code, was something I too noted in my improvements; I agree to make code reproducible it is key that additional files should immediately describe their role. Inclusion of summary information allows for users to quickly navigate between functions, ensuring appropriate referral in the case of required adjustment. This is also in line with standard practice, meaning that inclusion of summary information would support a format that is more recognisable to other users, further advancing its navigability.
 
-
--   *What improvements did they suggest, and do you agree?*
-
--   *What did you learn about writing code for other people?*
+Overall, across this task I have learnt the importance of simplicity in creating reproducible code. Ensuring that any constituent information, crucial for the running of core code, is clearly labelled and their purpose clearly exclaimed. Also, key to this, is the explicit and clear outlining of what any constituent files do; this can be easily achieved through a clear README file. The inclusion of this detail in my repository and it's constituent files, appeared to enable easy navigation, crucial for ensuring relevant files are utilised appropriately.
