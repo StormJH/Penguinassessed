@@ -1,9 +1,10 @@
 ---
 title: "penguin_analysis"
 output:
-  pdf_document: default
   html_document:
+    embed-resources: true
     df_print: paged
+  pdf_document: default
 date: "2024-12-07"
 ---
 
@@ -80,7 +81,7 @@ ggplot(penguins_clean, aes(x = species)) +
     
     sec.axis = sec_axis(
       transform = ~ .,  
-      # Transforms the scale of flipper length
+      # Transforms the scale of flipper length, no scale factor here to cause confusion in resulting graph.
       
       name = "Flipper Length (mm)",  
       # Title of the secondary axis.
@@ -96,10 +97,10 @@ ggplot(penguins_clean, aes(x = species)) +
   labs(title = "Penguin Body Mass and Flipper Length by Species") +
   theme(
     axis.title.y.right = element_text(angle = 90, hjust = 0.5),  
-    # Adjust the title of the right axis.
+    # Adjust the title of the secondary axis.
     
     axis.text.y.right = element_text(hjust = 1)  
-    # Adjust the text position on the right axis.
+    # Adjust the text position on the secondary axis.
   )
 
 
@@ -140,10 +141,19 @@ In this study, I aim to establish whether culmen depth and length are phenotypic
 cleaning_penguin_columns <- function(penguins_raw) {
   penguins_raw %>%
     clean_names() %>%
+  # Removes spaces between column titles.
+  
     remove_empty(c("rows", "cols")) %>%
+  # Removes empty columns and rows
+  
     select(-starts_with("delta")) %>%
+  # Selectively removes columns with titles beginning with "delta"
+  
     select(-"comments") %>%
+  # Selectively removes the "comments" columns
+
     drop_na()  
+  # Removes NA values
 }
 
 
@@ -153,7 +163,7 @@ penguins_raw <- read_csv(here("data", "penguins_raw.csv"), show_col_types = FALS
 # Running the cleaning function (cleaning.R, found in "functions" file)
 penguins_clean <- cleaning_penguin_columns(penguins_raw)
 
-#Saving cleaned data as a new csv file in data folder
+#Saving cleaned data as a new csv file in "data" folder
 write_csv(penguins_clean, here("data", "penguins_clean.csv"))
 
 

@@ -5,7 +5,8 @@ save_plot_png <- function(plot_object,
                           size, 
                           res, 
                           scaling) {
-  # Create a png file with specified parameters.
+  
+# Create a png file with specified parameters.
   
   agg_png(filename, width = size, 
           height = size, 
