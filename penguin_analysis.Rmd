@@ -1,10 +1,10 @@
 ---
 title: "penguin_analysis"
 output:
+  pdf_document: default
   html_document:
     embed-resources: true
     df_print: paged
-  pdf_document: default
 date: "2024-12-07"
 ---
 
@@ -564,6 +564,8 @@ knitr::kable(shapiro_results, format = "markdown", digits = 3, caption = "Shapir
 ```
 
 ##### Figure 7b: Shapiro-test for the normality asssumption in Z-test
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ```{r, saving figures, warning=FALSE, message=FALSE}
 
