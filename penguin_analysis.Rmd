@@ -250,7 +250,7 @@ lm_table_formatted <- lm_table %>%
 # Use pvalue_format() to create a new column containing p-values formatted for readability.
 ```
 
-```{r, producing a scatter plot overlaying linear regressions for each species}
+```{r, producing a scatter plot overlaying linear regressions for each species, message=FALSE}
 
 # Producing a scatter plat overlaying linear regressions for each species:
 
