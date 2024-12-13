@@ -1,10 +1,10 @@
 ---
 title: "penguin_analysis"
 output:
+  pdf_document: default
   html_document:
     embed-resources: true
     df_print: paged
-  pdf_document: default
 date: "2024-12-07"
 ---
 
@@ -212,9 +212,9 @@ I will use linear regressions to measure **how culmen depth changes with culmen 
 
 Following this, I will use an Analysis of Covariance (ANCOVA) to analyse the significance of the **interaction between culmen length and species identity** in determining variation in culmen width. This will test if species identity affects the relationship between these traits.
 
-As demonstrated by Figure 6 (supplementary materials), analysis using linear models (as required for both regressions and ANCOVA) is **appropriate** for these data; given the displayed normality and homoscedascity of their residuals, and linearity of the relationship between predictor and outcome variables.
+As demonstrated by Figure 6 (Supplementary Materials), analysis using linear models (as required for both regressions and ANCOVA) is **appropriate** for these data; given the displayed normality and homoscedascity of their residuals, and linearity of the relationship between predictor and outcome variables.
 
-Finally, to compare the **differences in the covariance** of these traits across species, I will calculate Pearson's r coefficient for each (Formula 1, Supplementary Materials), transforming this into a Z-score (Formula 2, Supplementary Materials), to generate a p-value- via a Two-sample Z-test (Formula 3, Supplemenatry Materials). This value will be used to assess the significance of the differences in the strength of correlations, across the species' tested. However, the **suitability of a Z test** is limited by the small sample size and a non-normal distribution of Z-statistics (p=0.2497, Figure 7, Supplementary Materials), which may limit the validity of our conclusions.
+Finally, to compare the **differences in the covariance** of these traits across species, I will calculate Pearson's r coefficient for each (Formula 1, Supplementary Materials), transforming this into a Z-score (Formula 2, Supplementary Materials), to generate a p-value- via a Two-sample Z-test (Formula 3, Supplemenatry Materials). This value will be used to assess the significance of the differences in the strength of correlations, across the species' tested. However, the **suitability of a Z test** is limited by the small sample size and a non-normal distribution of Z-statistics (p=0.2497, Figure 7b, Supplementary Materials), which may limit the validity of our conclusions.
 
 Ultimately, this study will establish if culmen length and depth have a significantly different relationship between species, and whether they are significantly more integrated (more strongly correlated) in different species of Penguin.
 
@@ -429,7 +429,7 @@ The consistent positive correlation across all species indicates a weak isometri
 
 Importantly, these comparisons assume that species are independent units. However, these species all vary in their relatedness. Adelie and Gentoos are more closely related to each other, and Chinstraps are more distantly related to both; but all 3 fall within the same genus: *Pygoscelis* (Ksepka, D.T.,et al, 2006). These different evolutionary relationships could undermine the suitability of comparisons. As in the case of estimated covariance, it is the most distantly related species (Chinstraps and Adelies) that display the largest difference in covariance. Therefore, future studies should better control for evolutionary relationships that may confound comparisons of trait covariance.
 
-Significantly higher Pearson's r coefficients indicate stronger stabilising selection that favours more integrated beak dimensions in the Chinstrap and Gentoo than that of the Adelie Penguin. However, the validity of these conclusions is limited by the violation of the assumption of normality in the Z-test (Figure 7, supplementary materials); encouraging future analysis to use non-parametric tests (such as bootstrapping).
+Significantly higher Pearson's r coefficients indicate stronger stabilising selection that favours more integrated beak dimensions in the Chinstrap and Gentoo than that of the Adelie Penguin. However, the validity of these conclusions is limited by the violation of the assumption of normality in the Z-test (Figure 7a and b, Supplementary Materials); encouraging future analysis to use non-parametric tests (such as bootstrapping).
 
 Perhaps stronger morphological integration could be conferred by a shared regulatory unit between the genes determining culmen length and shape. Stronger coregulation could be selected for due to enhanced sexual selection on bill shape, selecting for culmen length to be more closely linked to depth, for instance.
 
