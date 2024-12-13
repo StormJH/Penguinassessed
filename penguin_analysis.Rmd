@@ -10,7 +10,7 @@ date: "2024-12-07"
 
 ```{r setup, warning=FALSE, message=FALSE}
 
-#Install relevant versions of packages from renv.lock file:
+#Install relevant versions of packages from "renv.lock" file:
 
 renv::restore()
 
@@ -37,7 +37,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r bad figure, echo=FALSE, warning=FALSE}
 
-# Cleaning penguins_raw data and saving the cleaned data as a new csv, penguins_clean:
+# Cleaning penguins_raw data, using a function saved in "functions" folder, allowing it to be sourced if required again. Cleaned data is then saved as a new csv file in "data" folder:
 
 # Create a csv file containing only raw data.
 write_csv(penguins_raw, here("data", "penguins_raw.csv"))
@@ -135,7 +135,7 @@ In this study, I aim to establish whether culmen depth and length are phenotypic
 
 ```{r cleaning data, and saving cleaned data}
 
-# Producing, and using, a function that cleans raw_penguins data and saves it as a separate csv file in the "data" folder: 
+# Producing and using a function saved in "functions" folder, allowing it to be sourced if required again. Function cleans data, saving it to a new csv file in "data" folder: 
 
 # Defining a function to clean data, removes spaces, empty rows and columns, columns with titles beginning with delta or comments, and any NA values.
 cleaning_penguin_columns <- function(penguins_raw) {
@@ -156,7 +156,6 @@ cleaning_penguin_columns <- function(penguins_raw) {
   # Removes NA values
 }
 
-
 # Loading the raw data
 penguins_raw <- read_csv(here("data", "penguins_raw.csv"), show_col_types = FALSE)
 
@@ -174,8 +173,11 @@ write_csv(penguins_clean, here("data", "penguins_clean.csv"))
 
 #Creating a scatter plot for culmen length vs culmen depth:
 
+# Set seed to make jittered points reproducible.
+set.seed(160)
+
 explanatoryfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_depth_mm, colour = species, shape = species)) +  
-  geom_point(alpha = 1, position = position_jitter(width = 0.1, height = 0.1, seed = 160)) +  
+  geom_point(alpha = 1, position = position_jitter(width = 0.1, height = 0.1)) +  
 # Adjust the size and transparency of points.
 
   theme_minimal() +  
@@ -202,7 +204,7 @@ print(explanatoryfigure)
 
 ```
 
-##### Figure 2: Scatter Plot of Culmen Length (mm) and Culmen Depth (mm) across 3 Penguin Species, split by both colour and shape of point; purple circles are Adelie Penguin, green triangles are Chinstrap Penguin, and yellow squares are Gentoo Penguin. .
+##### Figure 2: Scatter Plot of Culmen Length (mm) and Culmen Depth (mm) across 3 Penguin Species, split by both colour and shape of point; purple circles are Adelie Penguin, green triangles are Chinstrap Penguin, and yellow squares are Gentoo Penguin. 
 
 ### Methods
 
@@ -248,14 +250,19 @@ lm_table <- penguins_clean %>%
 lm_table_formatted <- lm_table %>%
   mutate(formatted_p = pvalue_format()(p_value)) 
 # Use pvalue_format() to create a new column containing p-values formatted for readability.
+
 ```
 
 ```{r, producing a scatter plot overlaying linear regressions for each species, message=FALSE}
 
 # Producing a scatter plat overlaying linear regressions for each species:
 
+# Set seed for reproducibility of jitter points
+
+set.seed(160)
+
 resultsfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_depth_mm, colour = species, shape = species)) +
-  geom_point(alpha = 0.4, position = position_jitter(width = 0.1, height = 0.1, seed = 160)) +  
+  geom_point(alpha = 0.4, position = position_jitter(width = 0.1, height = 0.1)) +  
 # Increased transparency, and apply jitter to improve clarity, randomness is made consistent by setting seed for reproducibility.
 
   geom_smooth(method = "lm", se = TRUE, aes(fill = species)) +  
@@ -298,6 +305,7 @@ print(resultsfigure)
 ```
 
 ##### Figure 3a: Correlation between Culmen Length and Depth across 3 Penguin Species. Different colours and shapes represent species, the shaded region around linear regressions represents 95% Confidence Intervals. These intervals indicate the range within which true regressions will fall with 95% certainty. The p-values (top right) indicate wether the slope coefficients are significantly different from 0, at an alpha value of 0.05.
+
 
 ```{r, making table for slope coeffecients}
 
@@ -395,10 +403,10 @@ Z_stat_results <- data %>%
 
     }) %>%
     bind_rows() 
-# Combines rows relating to different species pairs into a single data frame, containing all species pairs.
+    # Combines rows relating to different species pairs into a single data frame, containing all species pairs.
 
   return(Z_stat_results_comparison)
-# Send result of the function to the user, enabling its use outside of the function.
+    # Send result of the function to the user, enabling its use outside of the function.
 }
 
 
@@ -630,8 +638,8 @@ Additionally, functions within “Assumptions.R” and “Plotting.R” displaye
 
 I was pleased that my code was fully functional across users. Additionally, that the README file and regular annotations allowed for the easy navigation of my code, and its constituent folders. These features- I believe- are key for reproducibility of code, by clearly relating each line and section to its function.
    
-My partner suggested extending my use of the source(here("functions","filename") to functions that I only use once. Currently, my script only sources functions that I use multiple times, such as the "saving.R" function, although it's extended use for the "Z-test_for_correlation_coefficients.r" function, for instance, would make my code even more succinct. Although some benefits are limited, such as the ability to simultaneously edit functions, is limited by a sourcing function only being used once; I still agree that condensing code by more frequently sourcing functions- would benefit my code. Therefore, I agree with this improvement; sourcing functions (even those that I use only once) would improve the coherency of my code, whilst allowing for greater modularity to be achieved. This modularity would further limit the likelihood and impacts of accidental alterations to code, further lessening the effect of errors, increasing its reproducibility. 
+My partner suggested extending my use of the source(here("functions","filename") to functions that I only use once. Currently, my script only sources functions that I use multiple times, such as the "saving.R" function, although it's extended use for the "Z-test_for_correlation_coefficients.r" function, for instance, would make my code even more succinct. Although some benefits are limited, such as the ability to simultaneously edit functions, by sourcing function only being used once; I still agree that condensing code by more frequently sourcing functions- would be to its benefit. Therefore, I agree with this improvement; sourcing functions (even those that I use only once) would improve the coherency of my code, whilst allowing for greater modularity to be achieved. This modularity would further limit the likelihood and impacts of accidental alterations to code, further lessening the effect of errors, increasing code reproducibility. 
 
 Additionally, my partner recommended including an extra summary/format section to my currently annotated function files stored within the "functions" folder, suggesting this would allow for the faster identification of the purpose of each function file. The relatability of functions to the core code, was something I too noted in my improvements; I agree to make code reproducible it is key that additional files should immediately describe their role. Inclusion of formatting information allows for users to quickly navigate between functions, ensuring appropriate referral in the case of required adjustment. This is also in line with standard practice, meaning that inclusion of summary information would support a format that is more recognisable to other users, further advancing its navigability.
 
-Overall, across this task I have learnt the importance of simplicity in creating reproducible code. Ensuring that any constituent information, crucial for the running of core code, is clearly labelled and their purpose clearly exclaimed. Also, key to this, is the explicit and clear outlining of what any constituent files do; this can be easily achieved through a clear README file. The inclusion of this detail in my repository and it's constituent files, appeared to enable easy navigation, crucial for ensuring relevant files are utilised appropriately. Quick navigation through a strongly modular structure is crucial for code to be be reproduced accurately to the intention of its initial creators. 
+Overall, across this task I have learnt the importance of simplicity in creating reproducible code. Ensuring that any constituent information, crucial for the running of core code, is clearly labelled and its purpose clearly exclaimed. Also, key to this, is the explicit and clear outlining of what any constituent files do; this can be easily achieved through a clear README file. The inclusion of this detail in my repository and it's constituent files, appeared to enable easy navigation, crucial for ensuring relevant files are utilised appropriately. Quick navigation through a strongly modular structure is crucial for code to be be reproduced accurately, to the intention of its initial creators. 
