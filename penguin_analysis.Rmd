@@ -1,10 +1,10 @@
 ---
 title: "penguin_analysis"
 output:
-  pdf_document: default
   html_document:
     embed-resources: true
     df_print: paged
+  pdf_document: default
 date: "2024-12-07"
 ---
 
@@ -257,8 +257,7 @@ lm_table_formatted <- lm_table %>%
 
 # Producing a scatter plat overlaying linear regressions for each species:
 
-# Set seed for reproducibility of jitter points
-
+# Set seed for reproducibility of jitter points.
 set.seed(160)
 
 resultsfigure <- ggplot(penguins_clean, aes(x = culmen_length_mm, y = culmen_depth_mm, colour = species, shape = species)) +
